@@ -4,7 +4,7 @@ A Python based scanner to find potential SSRF parameters in a web application.
 
 ## Motivation
 SSRF being one of the critical vulnerabilities out there in web, i see there was no tool which would automate finding potential
-vulnerable parameters. See-SURF can be added to your arsenal for recon while doing bug hunting/web application testing.
+vulnerable parameters. See-SURF can be added to your arsenal for recon while doing bug hunting/web security testing.
 
  
 ## Screenshots
