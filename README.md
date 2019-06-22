@@ -51,8 +51,8 @@ POSSIBILITY OF BUG FINDING INCREASES)<br/>
 
 By Default, normal mode is On, with verbose switch you would see the same potential vulnerable param in different endpoints. 
 (Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.)
-For example: <br/>
-https://google.com/abc/1/urlToConnect=https://yahoo.com
+<br/>For example: <br/>
+https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
 
