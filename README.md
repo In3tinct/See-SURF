@@ -36,6 +36,8 @@ https://google.com/123/urlToConnect=https://yahoo.com
 
 5) Supply cookies for an authenticated scanning.
 
+6) Comments on almost every logic so people who would like to contribute can understand easily.
+
 ## How to use?
 This would run with default threads=10, no cookies/session and NO verbose mode <br/>
 `python3 see-surf.py -H https://www.google.com`
