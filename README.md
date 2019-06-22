@@ -34,13 +34,13 @@ For example:
 https://google.com/abc/1/urlToConnect=https://yahoo.com
 https://google.com/123/urlToConnect=https://yahoo.com
 
-5) Supply cookies for an authenticated scans
+5) Supply cookies for an authenticated scanning.
 
 ## How to use?
 This would run with default threads=10, no cookies/session and NO verbose mode 
 python3 see-surf.py -H https://www.google.com
 
-Space seperate Cookies can be supplied for an authenticated session crawling
+Space seperate Cookies can be supplied for an authenticated session crawling (Highly Recommended)
 python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2
 
 Supplying no. of threads and verbose mode (VERBOSE MODE IS NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
@@ -59,7 +59,7 @@ Provide step by step series of examples and explanations about how to get a deve
 
 ## Tests
 A basic framework has been created. 
-More tested would be added to reduce false positives. 
+More tested would be added to reduce false positives.
 
 
 ## Contribute
@@ -71,8 +71,8 @@ Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
 Stackoverflow and Entire Internet. 
 
 #### Future Extensions
-- More conditions to avoid false positives
-- Transitioning from potential to trying an exploit (Hitting Bulls eye)
+- More conditions to avoid false positives.
+- Transitioning from potential parameter to trying an exploit. (Hitting Bulls eye).
 
 ## License
 GNUV3 © [In3tinct]
