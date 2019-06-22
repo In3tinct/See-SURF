@@ -5,8 +5,8 @@
 Python based scanner to find potential SSRF parameters in a web application.
 
 ## Motivation
-SSRF being one of the critical vulnerabilities out there, i see there was not a tool which would automate finding potential
-vulnerale parameters, reducing the manual work in the age of automation. See-SURF can be added to your arsenal for recon while doing bug hunting/web application testing.
+SSRF being one of the critical vulnerabilities out there in web, i see there was no tool which would automate finding potential
+vulnerale parameters. See-SURF can be added to your arsenal for recon while doing bug hunting/web application testing.
 
  
 ## Screenshots
@@ -65,8 +65,9 @@ More tested would be added to reduce false positives.
 
 
 ## Contribute
-
-Let people know how they can contribute into your project. A [contributing guideline](https://github.com/zulip/zulip-electron/blob/master/CONTRIBUTING.md) will be a big plus.
+- Report bugs
+- Suggestions for improvement
+- Suggestions for future extensions
 
 ## Credits
 Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
