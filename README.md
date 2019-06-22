@@ -1,4 +1,4 @@
-# See-SURF (UNDER CONSTRUCTION)
+# See-SURF
 
 
 ## Project title
