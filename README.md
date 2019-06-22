@@ -57,7 +57,11 @@ https://google.com/123/urlToConnect=https://yahoo.com
 
 
 ## Installation
-Provide step by step series of examples and explanations about how to get a development env running.
+git clone 
+
+Dependent libraries
+pip3 install BeautifulSoup4
+pip3 install requests
 
 ## Tests
 A basic framework has been created. 
