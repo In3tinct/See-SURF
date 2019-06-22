@@ -5,69 +5,74 @@
 Python based scanner to find potential SSRF parameters in a web application.
 
 ## Motivation
-SSRF being one of the critical vulnerabilities out there, i see there was not a tool which would scan the potential
-vulnerale parameters. See-SURF automates the process of finding SSRF bugs while doing bug hunting/web application testing.
+SSRF being one of the critical vulnerabilities out there, i see there was not a tool which would automate finding potential
+vulnerale parameters, reducing the manual work in the age of automation. See-SURF can be added to your arsenal for recon while doing bug hunting/web application testing.
 
-## Build status
-Build status of continus integration i.e. travis, appveyor etc. Ex. - 
-
-[![Build Status](https://travis-ci.org/akashnimare/foco.svg?branch=master)](https://travis-ci.org/akashnimare/foco)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/akashnimare/foco?branch=master&svg=true)](https://ci.appveyor.com/project/akashnimare/foco/branch/master)
-
-## Code style
-If you're using any code style like xo, standard etc. That will help others while contributing to your project. Ex. -
-
-[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
  
 ## Screenshots
 Include logo/demo screenshot etc.
 
 ## Tech/framework used
-Ex. -
-
 <b>Built with</b>
-- [Electron](https://electron.atom.io)
+- Python3
 
 ## Features
-1) Matches any GET URL Parameters containing web/url for example google.com/url=https://yahoo.com also 
-checks the parameter values for any URL or IP address passed. example google.com/q=https://yahoo.com
+1) Matches any GET URL Parameters containing keyword web/url (MORE TO BE ADDED). Example google.com/url=https://yahoo.com 
+Also, 
+checks the parameter values for any URL or IP address passed. Example google.com/q=https://yahoo.com
 
-2) Matches any POST request INPUT params with "Name" attribute containing containing web/url
-And also matches Values and Placeholder attribute containing a URL pattern
-for example: <input type="text" name="url" value="https://google.com"
+2) Matches any POST request INPUT params with "Name" attribute containing keyword web/url(MORE TO BE ADDED)
+Also,
+matches Values and Placeholder attribute containing a URL pattern. 
+Example: <input type="text" name="url" value="https://google.com"
 
-3) Multiple conditions to cut down false positives. 
+3) Multiple conditions to cut down false positives, as crawling pulls up a lot of stuff. Only same domain is crawled for now.
 
-4) By Default normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints
+4) By Default, normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints. 
+Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
 For example: 
+https://google.com/abc/1/urlToConnect=https://yahoo.com
+https://google.com/123/urlToConnect=https://yahoo.com
 
+5) Supply cookies for an authenticated scans
 
-## Code Example
-Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.
+## How to use?
+This would run with default threads=10, no cookies/session and NO verbose mode 
+python3 see-surf.py -H https://www.google.com
+
+Space seperate Cookies can be supplied for an authenticated session crawling
+python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2
+
+Supplying no. of threads and verbose mode (VERBOSE MODE NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
+POSSIBILIT OF BUG FINDING INCREASES)
+python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v
+
+By Default, normal mode is On, with verbose switch you would see the same potential vulnerable param in different endpoints. 
+(Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.)
+For example: 
+https://google.com/abc/1/urlToConnect=https://yahoo.com
+https://google.com/123/urlToConnect=https://yahoo.com
+
 
 ## Installation
 Provide step by step series of examples and explanations about how to get a development env running.
 
-## API Reference
-
-Depending on the size of the project, if it is small and simple enough the reference docs can be added to the README. For medium size to larger projects it is important to at least provide a link to where the API reference docs live.
-
 ## Tests
-Describe and show how to run the tests with code examples.
+A basic framework has been created. 
+More tested would be added to reduce false positives. 
 
-## How to use?
-If people like your project they’ll want to learn how they can use it. To do so include step by step guide to use your project.
 
 ## Contribute
 
 Let people know how they can contribute into your project. A [contributing guideline](https://github.com/zulip/zulip-electron/blob/master/CONTRIBUTING.md) will be a big plus.
 
 ## Credits
-template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
+Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
+Stackoverflow and Entire Internet. 
 
-#### Anything else that seems useful
+#### Future Extensions
+- More conditions to avoid false positives
+- Transitioning from potential to trying an exploit (Hitting Bulls eye)
 
 ## License
-A short snippet describing the license (MIT, Apache etc)
-
 GNUV3 © [In3tinct]
