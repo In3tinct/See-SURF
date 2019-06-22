@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import queue
 from threading import Thread
 from bs4 import BeautifulSoup
