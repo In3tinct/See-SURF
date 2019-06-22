@@ -1,8 +1,6 @@
 # See-SURF
 
-
-## Project title
-Python based scanner to find potential SSRF parameters in a web application.
+A Python based scanner to find potential SSRF parameters in a web application.
 
 ## Motivation
 SSRF being one of the critical vulnerabilities out there in web, i see there was no tool which would automate finding potential
