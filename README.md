@@ -76,7 +76,7 @@ More tested would be added to reduce any false positives.
 Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
 Stackoverflow and Entire Internet. 
 
-#### Future Extensions
+## Future Extensions
 - Include more places to look for potential params like Javascript files
 - Finding potential params during redirection.
 - More conditions to avoid false positives.
