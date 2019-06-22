@@ -59,9 +59,8 @@ https://google.com/123/urlToConnect=https://yahoo.com
 ## Installation
 `git clone https://github.com/In3tinct/See-SURF.git`
 `cd See-SURF/`
-
-Dependent libraries
-`pip3 install BeautifulSoup4`
+<br/>Dependent libraries
+`pip3 install BeautifulSoup4`<br/>
 `pip3 install requests`
 
 ## Tests
