@@ -21,7 +21,7 @@ vulnerale parameters. See-SURF can be added to your arsenal for recon while doin
 Example google.com/url=https://yahoo.com 
 <br/>Also, <br/>
 checks the parameter values for any URL or IP address passed. <br/>
-Example google.com/q=https://yahoo.com
+Example: google.com/q=https://yahoo.com
 
 2) Matches any POST request INPUT params with "Name" attribute containing keyword web/url(MORE TO BE ADDED)
 <br/>Also,<br/>
@@ -32,7 +32,7 @@ Example: <input type="text" name="url" value="https://google.com">
 
 4) By Default, normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints. 
 Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
-For example: <br/>
+<br/>Example: <br/>
 https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
@@ -51,7 +51,7 @@ POSSIBILITY OF BUG FINDING INCREASES)<br/>
 
 By Default, normal mode is On, with verbose switch you would see the same potential vulnerable param in different endpoints. 
 (Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.)
-<br/>For example: <br/>
+<br/>Example: <br/>
 https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
@@ -70,9 +70,9 @@ More tested would be added to reduce false positives.
 
 
 ## Contribute
-- Report bugs
-- Suggestions for improvement
-- Suggestions for future extensions
+- Report bugs.
+- Suggestions for improvement.
+- Suggestions for future extensions.
 
 ## Credits
 Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
@@ -80,7 +80,10 @@ Stackoverflow and Entire Internet.
 
 #### Future Extensions
 - More conditions to avoid false positives.
-- Transitioning from potential parameter to trying an exploit. (Hitting Bulls eye).
+- Exploitation. (Hitting Bulls eye)
+
 
 ## License
 GNUV3 © [In3tinct]
+
+Twitter - https://twitter.com/_In3tinct
