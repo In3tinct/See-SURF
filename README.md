@@ -19,12 +19,12 @@ vulnerale parameters. See-SURF can be added to your arsenal for recon while doin
 ## Features
 1) Matches any GET URL Parameters containing keyword web/url (MORE TO BE ADDED). <br/>
 Example google.com/url=https://yahoo.com 
-Also, 
+<br/>Also, <br/>
 checks the parameter values for any URL or IP address passed. <br/>
 Example google.com/q=https://yahoo.com
 
 2) Matches any POST request INPUT params with "Name" attribute containing keyword web/url(MORE TO BE ADDED)
-Also,
+<br/>Also,<br/>
 matches Values and Placeholder attribute containing a URL pattern. <br/>
 Example: <input type="text" name="url" value="https://google.com">
 
@@ -33,14 +33,14 @@ Example: <input type="text" name="url" value="https://google.com">
 4) By Default, normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints. 
 Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
 For example: <br/>
-https://google.com/abc/1/urlToConnect=https://yahoo.com
+https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
 5) Supply cookies for an authenticated scanning.
 
 ## How to use?
 This would run with default threads=10, no cookies/session and NO verbose mode <br/>
-python3 see-surf.py -H https://www.google.com`
+`python3 see-surf.py -H https://www.google.com`
 
 Space seperate Cookies can be supplied for an authenticated session crawling (Highly Recommended)<br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
