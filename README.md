@@ -14,7 +14,7 @@ vulnerale parameters. See-SURF can be added to your arsenal for recon while doin
 
 ## Tech/framework used
 <b>Built with</b>
-- Python3
+- *Python3*
 
 ## Features
 1) Matches any GET URL Parameters containing keyword web/url (MORE TO BE ADDED). <br/>
@@ -40,14 +40,14 @@ https://google.com/123/urlToConnect=https://yahoo.com
 
 ## How to use?
 This would run with default threads=10, no cookies/session and NO verbose mode <br/>
-python3 see-surf.py -H https://www.google.com
+*python3 see-surf.py -H https://www.google.com*
 
 Space seperate Cookies can be supplied for an authenticated session crawling (Highly Recommended)<br/>
-python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2
+*python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2*
 
 Supplying no. of threads and verbose mode (VERBOSE MODE IS NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
 POSSIBILITY OF BUG FINDING INCREASES)<br/>
-python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v
+*python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v*
 
 By Default, normal mode is On, with verbose switch you would see the same potential vulnerable param in different endpoints. 
 (Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.)
@@ -57,11 +57,11 @@ https://google.com/123/urlToConnect=https://yahoo.com
 
 
 ## Installation
-git clone 
+*git clone https://github.com/In3tinct/See-SURF.git*
 
 Dependent libraries
-pip3 install BeautifulSoup4
-pip3 install requests
+*pip3 install BeautifulSoup4*
+*pip3 install requests*
 
 ## Tests
 A basic framework has been created. 
