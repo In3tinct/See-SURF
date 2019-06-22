@@ -10,7 +10,7 @@ vulnerale parameters, reducing the manual work in the age of automation. See-SUR
 
  
 ## Screenshots
-Include logo/demo screenshot etc.
+![alt text](https://github.com/In3tinct/See-SURF/blob/master/See-SURF.png)
 
 ## Tech/framework used
 <b>Built with</b>
@@ -43,8 +43,8 @@ python3 see-surf.py -H https://www.google.com
 Space seperate Cookies can be supplied for an authenticated session crawling
 python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2
 
-Supplying no. of threads and verbose mode (VERBOSE MODE NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
-POSSIBILIT OF BUG FINDING INCREASES)
+Supplying no. of threads and verbose mode (VERBOSE MODE IS NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
+POSSIBILITY OF BUG FINDING INCREASES)
 python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v
 
 By Default, normal mode is On, with verbose switch you would see the same potential vulnerable param in different endpoints. 
