@@ -40,7 +40,7 @@ https://google.com/123/urlToConnect=https://yahoo.com
 This would run with default threads=10, no cookies/session and NO verbose mode <br/>
 `python3 see-surf.py -H https://www.google.com`
 
-Space seperate Cookies can be supplied for an authenticated session crawling (Highly Recommended)<br/>
+Space separate Cookies can be supplied for an authenticated session crawling (Highly Recommended)<br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
 
 Supplying no. of threads and verbose mode (VERBOSE MODE IS NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
