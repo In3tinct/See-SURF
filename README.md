@@ -32,7 +32,7 @@ Example: <br/>
 4) By Default, normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints. 
 Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
 <br/>Example: <br/>
-`https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>`
+`https://google.com/abc/1/urlToConnect=https://yahoo.com> `<br/>
 `https://google.com/123/urlToConnect=https://yahoo.com`
 
 5) Supply cookies for an authenticated scanning.
