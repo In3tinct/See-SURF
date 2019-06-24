@@ -16,24 +16,24 @@ vulnerable parameters. See-SURF can be added to your arsenal for recon while doi
 
 ## Features
 1) Matches any GET URL Parameters containing keyword web/url (MORE TO BE ADDED). <br/>
-Example google.com/url=https://yahoo.com 
+Example `google.com/url=https://yahoo.com `
 <br/>Also, <br/>
 checks the parameter values for any URL or IP address passed. <br/>
-Example: google.com/q=https://yahoo.com
+Example: `google.com/q=https://yahoo.com`
 
 2) Matches any POST request INPUT params with "Name" attribute containing keyword web/url(MORE TO BE ADDED)
 <br/>Also,<br/>
 matches Values and Placeholder attribute containing a URL pattern. <br/>
 Example: <br/>
-<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">
+`<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
 
 3) Multiple conditions to cut down false positives, as crawling pulls up a lot of stuff. Only same domain is crawled for now.
 
 4) By Default, normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints. 
 Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
 <br/>Example: <br/>
-https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
-https://google.com/123/urlToConnect=https://yahoo.com
+`https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>`
+`https://google.com/123/urlToConnect=https://yahoo.com`
 
 5) Supply cookies for an authenticated scanning.
 
