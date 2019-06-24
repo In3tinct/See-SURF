@@ -24,7 +24,8 @@ Example: google.com/q=https://yahoo.com
 2) Matches any POST request INPUT params with "Name" attribute containing keyword web/url(MORE TO BE ADDED)
 <br/>Also,<br/>
 matches Values and Placeholder attribute containing a URL pattern. <br/>
-Example: <input type="text" name="url" value="https://google.com">
+Example: <br/>
+<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">
 
 3) Multiple conditions to cut down false positives, as crawling pulls up a lot of stuff. Only same domain is crawled for now.
 
@@ -73,7 +74,7 @@ More tested would be added to reduce any false positives.
 - Suggestions for future extensions.
 
 ## Credits
-Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f
+Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f <br/>
 Stackoverflow and Entire Internet. 
 
 ## Future Extensions
