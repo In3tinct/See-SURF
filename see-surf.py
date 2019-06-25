@@ -26,6 +26,7 @@ parser.add_argument("-H", "--host", dest="host", metavar="HOST", required=True)
 parser.add_argument("-t", "--threads", dest="threads", metavar="THREADS")
 parser.add_argument("-c","--cookies", dest="cookies", nargs='+', metavar="COOKIES")
 parser.add_argument("-v","--verbose", dest="verbose", action='store_true')
+parser.add_argument("-p","--payload", dest="payload")
 
 args = parser.parse_args()
 
@@ -55,6 +56,15 @@ if args.cookies:
 	for cook in args.cookies:
 		cookiesDict[cook.split("=")[0]]=cook.split("=")[1]
 
+#Making an external request to a hostname through the potential vulnerable parameter to validate SSRF
+def makingExternalRequests(paramName, url):
+	regexToReplace=paramName+"=(.*?)(?:&|$)"
+	parameterValuetoReplace=re.search(regexToReplace,url).group(1)
+
+	#Adding paramname 'args.payload+"/"+paramName,' at the end of burp collaborator url to differentiate which param succeeded to make external request.
+	formingPayloadURL=re.sub(parameterValuetoReplace,args.payload+"/"+paramName,url)
+	print ("\033[91m[-] Making external request with the potential vulnerable url:"+formingPayloadURL)
+	requests.get(formingPayloadURL)
 
 #This checks against URL keywords in param NAME
 def matchURLKeywordsInName(getOrForm,paramName,url):
@@ -63,18 +73,28 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 	else:
 		temp=paramName
 	if temp not in ssrfVul and re.search(matchList,paramName,re.I):
+		print ("Temping:"+temp)
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
 		ssrfVul.add(temp)
+		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now) 	
+		if getOrForm == "GET":
+			makingExternalRequests(paramName,url)
 
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
-	if args.verbose:
-		temp=url+":paramvalue:"+paramValues
-	else:
-		temp=paramValues
-	if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
-		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
-		ssrfVul.add(temp)
+        #Since param name was same and param values were different there was some duplication, decided to avoid duplication with paramname here
+        if args.verbose:
+                #temp=url+":paramvalue:"+paramValues
+                temp=url+":paramname:"+paramValues if paramName=="" else paramName
+        else:
+                temp=paramValues if paramName=="" else paramName
+                
+        if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
+                print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
+                ssrfVul.add(temp)
+                print ("Temping2:"+temp)
+                if getOrForm == "GET":
+                        makingExternalRequests(paramName,url)
 
 
 def checkForGetRequest(url):
@@ -162,6 +182,10 @@ def do_stuff(q):
 								throwAwayListForRest.add(rest_apis[0])
 
 					else:
+					#Reducing duplication for GET requests having same parameters for example, here there would only be one entry saved 
+					#since the 2nd url contains all param of 1st url plus one more parameter 'filter'
+					#http://www.msn.com/es-mx/deportes/browse/el-universal/vs-BBnqaEA?page=2&sort=sort_1
+					#http://www.msn.com/es-mx/deportes/browse/el-universal/vs-BBnqaEA?page=2&filter=duration_0&sort=sort_2
 						checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 						get_req=linkUrl.rsplit('?',1)
 						url=get_req[0]
