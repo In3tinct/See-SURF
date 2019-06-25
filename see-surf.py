@@ -30,11 +30,17 @@ parser.add_argument("-p","--payload", dest="payload")
 
 args = parser.parse_args()
 
+validateHost_regex="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+validateHostIpWithPort_regex="^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
+
 #Validating Host name
-if not re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",args.host):
+if not re.match(validateHost_regex,args.host):
 	print ("Terminating... Please enter Host in the format http://google.com or https://google.com")
 	sys.exit()
 
+if not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
+        print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
+        sys.exit()
 
 #Keeps a record of links which are already saved and are present just once in the queue
 linksVisited=set()
@@ -63,7 +69,7 @@ def makingExternalRequests(paramName, url):
 
 	#Adding paramname 'args.payload+"/"+paramName,' at the end of burp collaborator url to differentiate which param succeeded to make external request.
 	formingPayloadURL=re.sub(parameterValuetoReplace,args.payload+"/"+paramName,url)
-	print ("\033[91m[-] Making external request with the potential vulnerable url:"+formingPayloadURL)
+	print ("\033[91m[+] Making external request with the potential vulnerable url:"+formingPayloadURL)
 	requests.get(formingPayloadURL)
 
 #This checks against URL keywords in param NAME
@@ -73,7 +79,6 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 	else:
 		temp=paramName
 	if temp not in ssrfVul and re.search(matchList,paramName,re.I):
-		print ("Temping:"+temp)
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
 		ssrfVul.add(temp)
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now) 	
@@ -84,7 +89,6 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
         #Since param name was same and param values were different there was some duplication, decided to avoid duplication with paramname here
         if args.verbose:
-                #temp=url+":paramvalue:"+paramValues
                 temp=url+":paramname:"+paramValues if paramName=="" else paramName
         else:
                 temp=paramValues if paramName=="" else paramName
@@ -92,7 +96,6 @@ def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
         if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
                 print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
                 ssrfVul.add(temp)
-                print ("Temping2:"+temp)
                 if getOrForm == "GET":
                         makingExternalRequests(paramName,url)
 
@@ -143,7 +146,6 @@ def do_stuff(q):
 				ignoreListMatch=False			
 				for ignore in ignoreList:
 					if ignore in str(links):
-						#print ("Escaping PDF:"+str(links))
 						ignoreListMatch=True
 						break
 				if ignoreListMatch:
@@ -163,7 +165,6 @@ def do_stuff(q):
 
 					#skipping the loop if not of same domain
 					if not linkUrl.startswith(baseURL):
-						#print ("Escaping other domain")
 						continue
 
 					#Order of IF check conditions are important so we don't miss valid data, hence placing this condition at last
@@ -174,11 +175,9 @@ def do_stuff(q):
 						rest_apis=linkUrl.rsplit('/',1)
 						if not rest_apis[1]=='' and rest_apis[1].isdigit():
 							if rest_apis[0] in throwAwayListForRest:
-								#print ("Skipping:"+linkUrl)
 								continue
 							#Throw away lists for ignoring restapi links, don't want to mess with the original results in linksVisited
 							else:
-								#print ("Not skipping"+linkUrl)
 								throwAwayListForRest.add(rest_apis[0])
 
 					else:
@@ -200,7 +199,6 @@ def do_stuff(q):
 								formingRegex=re.escape(params[1])
 								if re.search(formingRegex,existingParams,re.I):
 									allParameterExists=True
-									#print ("Already exists")
 								else:
 									allParameterExists=False
 
