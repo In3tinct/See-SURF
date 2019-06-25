@@ -52,8 +52,8 @@ Space separate Cookies can be supplied for an authenticated session crawling <br
 Fire up burpsuite collaborator and pass the host with -p parameter Or start a simple python http server and wait for the 
 vulnerable param to execute your request. <b>(Highly Recommended)</b><br/>
 Payload will get executed with the param at the end of the string so its easy to identify which one is vulnerable.
-For example: <br/>
-http://72.72.72.72:8000/vulnerableparam <br/>
+For example: http://72.72.72.72:8000/vulnerableparam <br/>
+
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -p http://72.72.72.72:8000`
 
 ![alt text](https://github.com/In3tinct/See-SURF/blob/master/External_requests.png)
