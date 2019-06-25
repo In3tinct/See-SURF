@@ -39,12 +39,26 @@ Same parameter may not be sanitized at all places. But verbose mode generates a 
 
 6) Comments on almost every logic so people who would like to contribute can understand easily.
 
+7) Makes external request with the vulnerable parameter to confirm the possibility of SSRF
+
 ## How to use?
 This would run with default threads=10, no cookies/session and NO verbose mode <br/>
 `python3 see-surf.py -H https://www.google.com`
 
-Space separate Cookies can be supplied for an authenticated session crawling (Highly Recommended)<br/>
+Space separate Cookies can be supplied for an authenticated session crawling <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
+
+<b>Recently added feature </b>
+Fire up burpsuite collaborator and pass the host with -p parameter Or start a simple python http server and wait for the 
+vulnerable param to execute your request. (Highly Recommended)<br/>
+Payload will get executed with the param at the end of the string so its easy to identify which one is vulnerable.
+For example: <br/>
+http://72.72.72.72:8000/vulnerableparam <br/>
+`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -p http://72.72.72.72:8000`
+
+![alt text](https://github.com/In3tinct/See-SURF/blob/master/External_requests.png)
+
+
 
 Supplying no. of threads and verbose mode (VERBOSE MODE IS NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
 POSSIBILITY OF BUG FINDING INCREASES)<br/>
