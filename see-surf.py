@@ -38,7 +38,7 @@ if not re.match(validateHost_regex,args.host):
 	print ("Terminating... Please enter Host in the format http://google.com or https://google.com")
 	sys.exit()
 
-if not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
+if args.payload and not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
         print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
         sys.exit()
 
