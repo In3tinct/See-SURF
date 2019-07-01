@@ -60,8 +60,10 @@ matchList="(url|web)"
 cookiesDict={}
 if args.cookies:
 	for cook in args.cookies:
-		cookiesDict[cook.split("=")[0]]=cook.split("=")[1]
+                cookiesDict[cook[:cook.find("=")]]=cook[cook.find("=")+1:]
+		#cookiesDict[cook.split("=")[0]]=cook.split("=")[1]
 
+print (cookiesDict)
 #Making an external request to a hostname through the potential vulnerable parameter to validate SSRF
 def makingExternalRequests(paramName, url):
 	regexToReplace=paramName+"=(.*?)(?:&|$)"
