@@ -54,7 +54,7 @@ throwAwayGetReqs={}
 ignoreList=["pdf","mailto","javascript"]
 
 #List containing keywords to look for in post param name attributes and in get parameters
-matchList="(url|web)"
+matchList="(url|web|site)"
 
 #Cookies to send along with each requests
 cookiesDict={}
@@ -82,22 +82,22 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
 		ssrfVul.add(temp)
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now) 	
-		if getOrForm == "GET":
+		if args.payload and getOrForm == "GET":
 			makingExternalRequests(paramName,url)
 
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
-        #Since param name was same and param values were different there was some duplication, decided to avoid duplication with paramname here
-        if args.verbose:
-                temp=url+":paramname:"+paramValues if paramName=="" else paramName
-        else:
-                temp=paramValues if paramName=="" else paramName
+	#Since param name was same and param values were different there was some duplication, decided to avoid duplication with paramname here
+	if args.verbose:
+		temp=url+":paramname:"+paramValues if paramName=="" else paramName
+	else:
+		temp=paramValues if paramName=="" else paramName
                 
-        if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
-                print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
-                ssrfVul.add(temp)
-                if getOrForm == "GET":
-                        makingExternalRequests(paramName,url)
+	if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
+		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
+		ssrfVul.add(temp)
+		if args.payload and getOrForm == "GET":
+			makingExternalRequests(paramName,url)
 
 
 def checkForGetRequest(url):
