@@ -104,7 +104,7 @@ Stackoverflow and Entire Internet.
 - Include more places to look for potential params like Javascript files
 - Finding potential params during redirection.
 - More conditions to avoid false positives.
-- Exploitation. (Hitting Bulls eye)
+- Exploitation. 
 
 
 ## License
