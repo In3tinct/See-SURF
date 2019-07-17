@@ -8,7 +8,7 @@ vulnerable parameters. See-SURF can be added to your arsenal for recon while doi
 
  
 ## Screenshots
-![alt text](https://github.com/In3tinct/See-SURF/blob/master/See-SURF.png)
+![alt text](https://user-images.githubusercontent.com/18059590/61342276-849e2800-a7fe-11e9-9f2a-7ba3835903a8.png)
 
 ## Tech/framework used
 <b>Built with</b>
@@ -58,7 +58,7 @@ For example: http://72.72.72.72:8000/vulnerableparam <br/>
 
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -p http://72.72.72.72:8000`
 
-![alt text](https://github.com/In3tinct/See-SURF/blob/master/External_requests.png)
+![alt text](https://user-images.githubusercontent.com/18059590/61342277-849e2800-a7fe-11e9-832b-7de37cb027ff.png)
 
 
 [-] Supplying no. of threads and verbose mode (VERBOSE MODE IS NOT RECOMMENDED IF YOU DON'T WANT TO SPEND LONGER TIME BUT THE 
@@ -76,7 +76,7 @@ Provide burp sitemap files for a better discovery of potential SSRF parameters. 
 Browser the target with your burpsuite running at the background, make some GET/POST requests, the more the better. Then go to target, right click-> "Save selected Items" and save it. Provide to the script as follows. <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000`
 
-</br>![alt text](https://drive.google.com/file/d/10fWyx9XKtWrSoEEqLibGzqnR7h6EDLfz/view)
+</br>![alt text](https://user-images.githubusercontent.com/18059590/61342249-6a644a00-a7fe-11e9-87e8-3b26305cd8b5.png))
 
 ## Installation
 `git clone https://github.com/In3tinct/See-SURF.git`<br/>
