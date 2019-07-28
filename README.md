@@ -61,9 +61,9 @@ https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
 ## Version-2 (Best Recommended)
-[-] Burp Sitemap (-b switch) & Connect back automation (-p switch)
+ Burp Sitemap (<b>-b switch</b>) & Connect back automation (<b> -p switch </b>)
 
-Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
+[-] Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
 Browser the target with your burpsuite running at the background, make some GET/POST requests, the more the better. Then go to target, right click-> "Save selected Items" and save it. Provide to the script as follows. <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000`
 
