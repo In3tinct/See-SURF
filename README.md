@@ -61,6 +61,15 @@ https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
 ## Version-2 (Best Recommended)
+Burp Sitemap (-b switch) & Connect back automation (-p switch)
+
+Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
+Browser the target with your burpsuite running at the background, make some GET/POST requests, the more the better. Then go to target, right click-> "Save selected Items" and save it. Provide to the script as follows. <br/>
+`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000`
+
+</br>![alt text](https://user-images.githubusercontent.com/18059590/61342249-6a644a00-a7fe-11e9-87e8-3b26305cd8b5.png))
+
+
 [-] Fire up burpsuite collaborator and pass the host with -p parameter Or start a simple python http server and wait for the 
 vulnerable param to execute your request. <b>(Highly Recommended)</b><br/>
 (This basically helps in exploiting GET requests, for POST you would need to try to exploit it manually)<br/>
@@ -71,11 +80,6 @@ For example: http://72.72.72.72:8000/vulnerableparam <br/>
 
 ![alt text](https://user-images.githubusercontent.com/18059590/61342277-849e2800-a7fe-11e9-832b-7de37cb027ff.png)
 
-Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
-Browser the target with your burpsuite running at the background, make some GET/POST requests, the more the better. Then go to target, right click-> "Save selected Items" and save it. Provide to the script as follows. <br/>
-`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000`
-
-</br>![alt text](https://user-images.githubusercontent.com/18059590/61342249-6a644a00-a7fe-11e9-87e8-3b26305cd8b5.png))
 
 ## Installation
 `git clone https://github.com/In3tinct/See-SURF.git`<br/>
