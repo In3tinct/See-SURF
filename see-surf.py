@@ -58,7 +58,7 @@ throwAwayGetReqs={}
 ignoreList=["pdf","mailto","javascript"]
 
 #List containing keywords to look for in post param name attributes and in get parameters
-matchList="(url|web|site)"
+matchList="(url|web|site|uri)"
 
 #Cookies to send along with each requests
 cookiesDict={}
