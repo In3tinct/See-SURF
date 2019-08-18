@@ -38,9 +38,9 @@ validateHost_regex="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-
 validateHostIpWithPort_regex="^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
 
 #Validating Host name
-if not re.match(validateHost_regex,args.host):
-	print ("Terminating... Please enter Host in the format http://google.com or https://google.com")
-	sys.exit()
+if not(re.match(validateHost_regex,args.host) or re.match(validateHostIpWithPort_regex,args.host)):
+    print ("Terminating... Please enter Host in the format http://google.com or https://google.com or http://10.10.10.10 for internal hosts")
+    sys.exit()
 
 if args.payload and not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
         print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
