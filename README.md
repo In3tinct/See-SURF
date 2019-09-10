@@ -17,13 +17,11 @@ vulnerable parameters. See-SURF can be added to your arsenal for recon while doi
 ## Features
 1) Takes burp's sitemap as input and parses and parses the file with a strong regex matches any GET/POST URL parameters containing potentially vulnerable SSRF keywords like URL/website etc. Also,
 checks the parameter values for any URL or IP address passed.
-<br/>
-Example
+Examples
 GET request -<br/>
 google.com/url=https://yahoo.com <br/>
 google.com/q=https://yahoo.com <br/>
-FORMS -<br/>
-`<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
+FORMS -<br/> `<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
 <br/><br/>
 2) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters.
 <br/><br/>
