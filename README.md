@@ -15,32 +15,27 @@ vulnerable parameters. See-SURF can be added to your arsenal for recon while doi
 - `Python3`
 
 ## Features
-1) Matches any GET URL Parameters containing keyword web/url (MORE TO BE ADDED). <br/>
-Example `google.com/url=https://yahoo.com `
-<br/>Also, <br/>
-checks the parameter values for any URL or IP address passed. <br/>
-Example: `google.com/q=https://yahoo.com`
-
-2) Matches any POST request INPUT params with "Name" attribute containing keyword web/url(MORE TO BE ADDED)
-<br/>Also,<br/>
-matches Values and Placeholder attribute containing a URL pattern. <br/>
-Example: <br/>
-`<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
-
-3) Multiple conditions to cut down false positives, as crawling pulls up a lot of stuff. Only same domain is crawled for now.
-
-4) By Default, normal mode is On, with verbose switch you would see the same vulnerable param in different endpoints. 
-Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
-<br/>Example: <br/>
-`https://google.com/abc/1/urlToConnect=https://yahoo.com> `<br/>
-`https://google.com/123/urlToConnect=https://yahoo.com`
-
-5) Supply cookies for an authenticated scanning.
-
-6) Comments on almost every logic so people who would like to contribute can understand easily.
-
-7) Makes external request with the vulnerable parameter to confirm the possibility of SSRF
-
+1) Takes burp's sitemap as input and parses and parses the file with a strong regex matches any GET/POST URL parameters containing potentially vulnerable SSRF keywords like URL/website etc. Also,
+checks the parameter values for any URL or IP address passed.
+<br/>
+Example
+GET request -  <br/>
+- google.com/url=https://yahoo.com <br/>
+- google.com/q=https://yahoo.com <br/>
+FORMS <br/>
+- <input type="text" name="url" value="https://google.com" placeholder="https://msn.com">
+<br/><br/>
+2) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters.
+<br/><br/>
+3) Supply cookies for an authenticated scanning.
+<br/><br/>
+4) By default, normal mode is On, with a verbose switch you would see the same vulnerable param in different endpoints. The same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
+Example:<br/>
+https://google.com/path/1/urlToConnect=https://yahoo.com <br/>
+https://google.com/differentpath/urlToConnect=https://yahoo.com
+<br/><br/>
+5) Exploitation - Makes an external request to burp collaborator or any other http server with the vulnerable parameter to confirm the possibility of SSRF. 
+<br/><br/>
 ## How to use?
 [-] This would run with default threads=10, no cookies/session and NO verbose mode <br/>
 `python3 see-surf.py -H https://www.google.com`
