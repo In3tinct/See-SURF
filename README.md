@@ -55,8 +55,8 @@ https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
 ## Version-2 (Best Recommended)
- Burp Sitemap (<b>-b switch</b>) & Connect back automation (<b> -p switch </b>)
- Complete Command would look like this - 
+ Burp Sitemap (<b>-b switch</b>) & Connect back automation (<b> -p switch </b>) <br/>
+ Complete Command would look like this - <br/>
  `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000`
 
 [-] <b>-b switch</b> Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
