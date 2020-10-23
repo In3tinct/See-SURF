@@ -44,7 +44,7 @@ https://google.com/differentpath/urlToConnect=https://yahoo.com
 ` -b (Optional but recommended) - Spider the request using burp, export the file and give it to see-surf as input (check detailed features on how to do it)`<br/>
 ` -p (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params`<br/><br/>
 
-## Detailed Features with Flags
+# Detailed Features with Flags
 [-] This would run with default threads=10, no cookies/session and NO verbose mode <br/>
 `python3 see-surf.py -H https://www.google.com`
 
