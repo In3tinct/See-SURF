@@ -88,26 +88,17 @@ For example: http://72.72.72.72:8000/vulnerableparam <br/>
 `pip3 install BeautifulSoup4`<br/>
 `pip3 install requests`
 
-## Tests
-A basic framework has been created. 
-More tested would be added to reduce any false positives.
-
 
 ## Contribute
 - Report bugs.
 - Suggestions for improvement.
 - Suggestions for future extensions.
 
-## Credits
-Template - https://gist.github.com/akashnimare/7b065c12d9750578de8e705fb4771d2f <br/>
-Some regexes from https://www.regextester.com/ <br/> 
-
 ## Future Extensions
 - Include more places to look for potential params like Javascript files
 - Finding potential params during redirection.
-- More conditions to avoid false positives.
-- Exploitation. 
-
+- Exploitation.
+- Hidden parameters.
 
 ## License
 GNUV3 © [In3tinct]
