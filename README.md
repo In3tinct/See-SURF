@@ -63,13 +63,6 @@ https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/123/urlToConnect=https://yahoo.com
 
 ## Version-2 Features
- Burp Sitemap (<b>-b switch</b>) & Connect back to your server (<b> -p switch </b>) <br/><br/>
- <b>Complete Command would look like this - </b> <br/>
- `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000`<br/>
- `-H - Host name/Ip address <br/>
- -c - Cookies seperated by space (Some websites use multiple cookies for session tracking
- -b (Optional but recommended) - Spider the request using burp, export the file and give it to see-surf as input
- -p (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params`
 
 [-] <b>-b switch</b> Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
 Browser the target with your burpsuite running at the background, make some GET/POST requests, the more the better. Then go to target, right click-> "Save selected Items" and save it. Provide to the script as follows. <br/>
