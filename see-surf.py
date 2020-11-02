@@ -109,7 +109,7 @@ def checkForGetRequest(url):
 	#Regex to find parameters in a url
 	checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",url)
 
-	#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+	#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 	if not len(checking_params_for_url)==0:
 		#Getting the param values params[2] and param name params[1] and matching against regex
 		for params in checking_params_for_url:
@@ -161,7 +161,7 @@ def burp_siteMap_parse(q_burp):
 			else:
 				post=False
 			linkUrl=item.find('url').text
-			#Reducing unneccessary crawling and duplication	
+			#Reducing unnecessary crawling and duplication	
 			#Some post request were containing parameters in the URL as well for exmaple POST /api?returnUrl=
 			if "?" not in linkUrl:
 				rest_apis=linkUrl.rsplit('/',1)
@@ -223,7 +223,7 @@ def burp_siteMap_parse(q_burp):
 				if "?" in linkUrl:
 					checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 
-					#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+					#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 					if not len(checking_params_for_url)==0:
 						#Getting the param values params[2] and param name params[1] and matching against regex
 						for params in checking_params_for_url:
@@ -241,7 +241,7 @@ def burp_siteMap_parse(q_burp):
 					if re.search(form_regex,response):
 						form_req=re.search(form_regex,response).group(1)
 						checking_params_for_url= re.findall("(\&)?([^=]+)\=([^&]+)",form_req)
-						 #Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+						 #Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 						if not len(checking_params_for_url)==0:
 							#Getting the param values params[2] and param name params[1] and matching against regex
 							for params in checking_params_for_url:
@@ -265,7 +265,7 @@ def burp_siteMap_parse(q_burp):
 			elif item.find('status').text=="200" and item.find('method').text=="GET":
 				checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 
-				#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+				#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 				if not len(checking_params_for_url)==0:
 					#Getting the param values params[2] and param name params[1] and matching against regex
 					for params in checking_params_for_url:
