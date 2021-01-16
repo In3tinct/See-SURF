@@ -11,6 +11,7 @@ import requests
 import base64, xml.etree.ElementTree
 import urllib
 import json
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 banner="""
  ### #### ####        ### #   # ###   #### # # 
@@ -281,10 +282,12 @@ def burp_siteMap_parse(q_burp):
 			continue
 			
 def basicCrawling(url):
+	#Suppress the warnings due to verify=false
+	requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 	if args.cookies:
-		r = requests.get(url, cookies=cookiesDict)
+		r = requests.get(url, verify=False, cookies=cookiesDict)
 	else:
-		r = requests.get(url)
+		r = requests.get(url, verify=False)
 	siteContent=r.text
 	if url not in linksVisited:
 		checkFormParameters(siteContent,url)
