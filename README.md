@@ -26,11 +26,11 @@ google.com/url=https://yahoo.com <br/>
 google.com/q=https://yahoo.com <br/>
 FORMS -<br/> `<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
 <br/><br/>
-2) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters.
+2) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters. by default it uses 10 threads.
 <br/><br/>
 3) Supply cookies for an authenticated scanning.<br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
-<br/>
+<br/><br/>
 4) By default, normal mode is On, with a verbose switch you would see the same vulnerable param in different endpoints. The same parameter may not be sanitized at all places. But verbose mode generates a lot of noise. <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v` <br/>
 Example:<br/>
