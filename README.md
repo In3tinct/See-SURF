@@ -8,6 +8,12 @@ A Python based scanner to find potential SSRF parameters in a web application. S
 <b>Built with</b>
 - `Python3`
 
+## Installation
+`git clone https://github.com/In3tinct/See-SURF.git`<br/>
+`cd See-SURF/`<br/>
+`pip3 install BeautifulSoup4`<br/>
+`pip3 install requests`
+
 ## How to use?
  Burp Sitemap (<b>-b switch</b> check below if you don't know what that is) & Connect back to your server (<b> -p switch </b>) <br/><br/>
  <b>Complete Command would look like this - </b> <br/>
@@ -58,14 +64,6 @@ For example: http://72.72.72.72:8000/vulnerableparam <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -p http://72.72.72.72:8000`
 
 ![alt text](https://user-images.githubusercontent.com/18059590/61342277-849e2800-a7fe-11e9-832b-7de37cb027ff.png)
-
-
-## Installation
-`git clone https://github.com/In3tinct/See-SURF.git`<br/>
-`cd See-SURF/`<br/>
-`pip3 install BeautifulSoup4`<br/>
-`pip3 install requests`
-
 
 ## Contribute
 - Report bugs.
