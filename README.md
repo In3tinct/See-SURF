@@ -9,6 +9,15 @@ A Python based scanner to find potential SSRF parameters in a web application. S
 <b>Built with</b>
 - `Python3`
 
+## How to use?
+ Burp Sitemap (<b>-b switch</b>) & Connect back to your server (<b> -p switch </b>) <br/><br/>
+ <b>Complete Command would look like this - </b> <br/>
+ <b>`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000` </b><br/>
+` -H - Host name/Ip address`<br/>
+` -c - Cookies seperated by space (Some websites use multiple cookies for session tracking`<br/>
+` -b (Optional but recommended) - Spider the request using burp, export the file and give it to see-surf as input (check detailed features on how to do it)`<br/>
+` -p (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params`<br/><br/>
+
 ## Features
 1) Takes burp's sitemap as input and parses and parses the file with a strong regex matches any GET/POST URL parameters containing potentially vulnerable SSRF keywords like URL/website etc. Also,
 checks the parameter values for any URL or IP address passed.
@@ -29,15 +38,6 @@ https://google.com/differentpath/urlToConnect=https://yahoo.com
 <br/><br/>
 5) Exploitation - Makes an external request to burp collaborator or any other http server with the vulnerable parameter to confirm the possibility of SSRF. 
 <br/><br/>
-
-## How to use?
- Burp Sitemap (<b>-b switch</b>) & Connect back to your server (<b> -p switch </b>) <br/><br/>
- <b>Complete Command would look like this - </b> <br/>
- <b>`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000` </b><br/>
-` -H - Host name/Ip address`<br/>
-` -c - Cookies seperated by space (Some websites use multiple cookies for session tracking`<br/>
-` -b (Optional but recommended) - Spider the request using burp, export the file and give it to see-surf as input (check detailed features on how to do it)`<br/>
-` -p (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params`<br/><br/>
 
 ## Detailed Features with Flags
 [-] This would run with default threads=10, no cookies/session and NO verbose mode <br/>
