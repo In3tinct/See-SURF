@@ -10,7 +10,7 @@ A Python based scanner to find potential SSRF parameters in a web application. S
 - `Python3`
 
 ## How to use?
- Burp Sitemap (<b>-b switch</b>) & Connect back to your server (<b> -p switch </b>) <br/><br/>
+ Burp Sitemap (<b>-b switch</b> check below if you don't know what that is) & Connect back to your server (<b> -p switch </b>) <br/><br/>
  <b>Complete Command would look like this - </b> <br/>
  <b>`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000` </b><br/>
 ` -H - Host name/Ip address`<br/>
@@ -45,7 +45,6 @@ https://google.com/differentpath/urlToConnect=https://yahoo.com
 
 [-] Space separate Cookies can be supplied for an authenticated session crawling <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
-
 
 [-] Supplying no. of threads and verbose mode (Verbose Mode Is Not Recommended If You Don't Want To Spend Longer Time But The 
 Possibility Of Bug Finding Increases)<br/>
