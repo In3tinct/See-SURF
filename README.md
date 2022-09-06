@@ -29,31 +29,17 @@ FORMS -<br/> `<input type="text" name="url" value="https://google.com" placehold
 2) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters.
 <br/><br/>
 3) Supply cookies for an authenticated scanning.
-<br/><br/>
-4) By default, normal mode is On, with a verbose switch you would see the same vulnerable param in different endpoints. The same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.
+<br/>
+`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
+<br/>
+4) By default, normal mode is On, with a verbose switch you would see the same vulnerable param in different endpoints. The same parameter may not be sanitized at all places. But verbose mode generates a lot of noise. <br/>
+`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v` <br/>
 Example:<br/>
 https://google.com/path/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/differentpath/urlToConnect=https://yahoo.com
 <br/><br/>
 5) Exploitation - Makes an external request to burp collaborator or any other http server with the vulnerable parameter to confirm the possibility of SSRF. 
 <br/><br/>
-
-## Detailed Features with Flags
-[-] This would run with default threads=10, no cookies/session and NO verbose mode <br/>
-`python3 see-surf.py -H https://www.google.com`
-
-[-] Space separate Cookies can be supplied for an authenticated session crawling <br/>
-`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
-
-[-] Supplying no. of threads and verbose mode (Verbose Mode Is Not Recommended If You Don't Want To Spend Longer Time But The 
-Possibility Of Bug Finding Increases)<br/>
-`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -t 20 -v`
-
-By Default, normal mode is On, with verbose switch you would see the same potential vulnerable param in different endpoints. 
-(Same parameter may not be sanitized at all places. But verbose mode generates a lot of noise.)
-<br/>Example: <br/>
-https://google.com/abc/1/urlToConnect=https://yahoo.com <br/>
-https://google.com/123/urlToConnect=https://yahoo.com
 
 ### Version-2 Features
 
