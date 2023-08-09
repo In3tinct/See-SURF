@@ -413,13 +413,13 @@ if args.burp:
 	print ("\nProcessing Burp file\n")
 	for i in range(num_threads):
 		worker = Thread(target=burp_siteMap_parse, args=(q_burp,))
-		worker.setDaemon(True)
+		worker.daemon = True
 		worker.start()
 q_burp.join()
 print ("\nStarting Crawling\n")
 for i in range(num_threads):
 	worker = Thread(target=do_stuff, args=(q,))
-	worker.setDaemon(True)
+	worker.daemon = True
 	worker.start()
 
 q.join()
