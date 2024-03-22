@@ -78,5 +78,3 @@ For example: http://72.72.72.72:8000/vulnerableparam <br/>
 
 ## License
 GNUV3 © [In3tinct]
-
-Twitter - https://twitter.com/_In3tinct
