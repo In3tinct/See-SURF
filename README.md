@@ -15,24 +15,24 @@ A Python based scanner to find potential SSRF parameters in a web application. S
 `pip3 install requests`
 
 ## How to use?
- Burp Sitemap (<b>-b switch</b> check below if you don't know what that is) & Connect back to your server (<b> -p switch </b>) <br/><br/>
- <b>Complete Command would look like this - </b> <br/>
+ <b>Complete Command would look like this </b> <br/>
+ 
  <b>`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000` </b><br/>
-` -H - Host name/Ip address`<br/>
-` -c - Cookies seperated by space (Some websites use multiple cookies for session tracking`<br/>
-` -b (Optional but recommended) - Spider the request using burp, export the file and give it to see-surf as input (check detailed features on how to do it)`<br/>
+` -H - Host name/Ip address fo the target`<br/>
+` -c - Cookies for authenticated scanning, seperated by space (Some websites use multiple cookies for session tracking`<br/>
+` -b (Optional but recommended) - Spider the request using burp, export the site map file and give it to see-surf as input (check detailed features on how to do it)`<br/>
 ` -p (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params`<br/><br/>
 
 ## Features
-1) Takes burp's sitemap as input and parses and parses the file with a strong regex matches any GET/POST URL parameters containing potentially vulnerable SSRF keywords like URL/website etc. Also,
-checks the parameter values for any URL or IP address passed.
-Examples
-GET request -<br/>
-google.com/url=https://yahoo.com <br/>
-google.com/q=https://yahoo.com <br/>
-FORMS -<br/> `<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
+1) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters with a strong regex matches in GET/POST URL parameters containing, potentially vulnerable keywords like URL/website etc. Also, checks the parameter values for any URL or IP address passed.
+
+For Example, Matches would look like -
+
+For GET request  - `google.com/url=https://yahoo.com` <br/>
+`google.com/q=https://yahoo.com` <br/>
+For POST/FORMS - `<input type="text" name="url" value="https://google.com" placeholder="https://msn.com">`
 <br/><br/>
-2) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters. by default it uses 10 threads.
+2) Takes burp's sitemap as input. Check detailed features for more details.
 <br/><br/>
 3) Supply cookies for an authenticated scanning.<br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2`
@@ -43,12 +43,12 @@ Example:<br/>
 https://google.com/path/1/urlToConnect=https://yahoo.com <br/>
 https://google.com/differentpath/urlToConnect=https://yahoo.com
 <br/><br/>
-5) Exploitation - Makes an external request to burp collaborator or any other http server with the vulnerable parameter to confirm the possibility of SSRF. 
+5) Exploitation - Makes an external request to burp collaborator or any other http server with the vulnerable parameter to confirm the possibility of SSRF. (An external redirect vulnerability can potentially be vulnerable to SSRF)
 <br/><br/>
 
-### Version-2 Features
+### Detailed Features
 
-[-] <b>-b switch</b> Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
+[-] <b>-b switch</b> Burp's site map shows the information that Burp collects as you explore your target application like URLs collected etc. Provide burp sitemap files for a better discovery of potential SSRF parameters. The script would first parse the burp file and try to identify potential params and then run the built in crawler on it <br/><br/>
 Browser the target with your burpsuite running at the background, make some GET/POST requests, the more the better. Then go to target, right click-> "Save selected Items" and save it. Provide to the script as follows. <br/>
 `python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml`
 
@@ -85,9 +85,9 @@ year = {2019}
 - Suggestions for future extensions.
 
 ## Future Extensions
-- Include more places to look for potential params like Javascript files
+- Include more places to look for potential params like Javascript files.
+- Exploitation, send internal/localhost URLs and check responses, instead of external server.
 - Finding potential params during redirection.
-- Exploitation.
 - Hidden parameters.
 
 ## License
