@@ -4,6 +4,20 @@ A Python based scanner to find potential SSRF parameters in a web application. S
 
 ![alt text](https://user-images.githubusercontent.com/18059590/61342276-849e2800-a7fe-11e9-9f2a-7ba3835903a8.png)
 
+## Citation
+Please cite, If you use this software in your Research papers, articles etc.
+
+```
+@software{Agrawal_See-SURF_Detect_SSRF_2019,
+author = {Agrawal, Vaibhav},
+month = jul,
+title = {{See-SURF: Detect SSRF security vulnerability}},
+url = {https://github.com/In3tinct/See-SURF},
+version = {2.0.0},
+year = {2019}
+}
+```
+
 ## Tech/framework used
 <b>Built with</b>
 - `Python3`
