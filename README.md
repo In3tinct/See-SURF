@@ -79,20 +79,6 @@ For example: http://72.72.72.72:8000/vulnerableparam <br/>
 
 ![alt text](https://user-images.githubusercontent.com/18059590/61342277-849e2800-a7fe-11e9-832b-7de37cb027ff.png)
 
-## Citation
-Please cite, If you use this software in your Research papers, articles etc.
-
-```
-@software{Agrawal_See-SURF_Detect_SSRF_2019,
-author = {Agrawal, Vaibhav},
-month = jul,
-title = {{See-SURF: Detect SSRF security vulnerability}},
-url = {https://github.com/In3tinct/See-SURF},
-version = {2.0.0},
-year = {2019}
-}
-```
-
 ## Contribute
 - Report bugs.
 - Suggestions for improvement.
