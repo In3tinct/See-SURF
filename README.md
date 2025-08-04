@@ -32,10 +32,10 @@ year = {2019}
  <b>Complete Command would look like this </b> <br/>
  
  <b>`python3 see-surf.py -H https://www.google.com -c cookie_name1=value1 cookie_name2=value2 -b burp_file.xml -p http://72.72.72.72:8000` </b><br/>
-` -H - Host name/Ip address fo the target`<br/>
-` -c - Cookies for authenticated scanning, seperated by space (Some websites use multiple cookies for session tracking`<br/>
-` -b (Optional but recommended) - Spider the request using burp, export the site map file and give it to see-surf as input (check detailed features on how to do it)`<br/>
-` -p (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params`<br/><br/>
+` -H` - Host name/Ip address fo the target<br/>
+` -c` - Cookies for authenticated scanning, seperated by space (Some websites use multiple cookies for session tracking<br/>
+` -b` (Optional but recommended) - Spider the request using burp, export the site map file and give it to see-surf as input (check detailed features on how to do it)<br/>
+` -p` (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params<br/><br/>
 
 ## Features
 1) Multi-threaded In-built crawler to run and gather as much data as possible to parse and identify potentially vulnerable SSRF parameters with a strong regex matches in GET/POST URL parameters containing, potentially vulnerable keywords like URL/website etc. Also, checks the parameter values for any URL or IP address passed.
