@@ -25,8 +25,7 @@ year = {2019}
 ## Installation
 `git clone https://github.com/In3tinct/See-SURF.git`<br/>
 `cd See-SURF/`<br/>
-`pip3 install BeautifulSoup4`<br/>
-`pip3 install requests`
+`pip3 install -r requirements.txt`<br/>
 
 ## How to use?
  <b>Complete Command would look like this </b> <br/>
