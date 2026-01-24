@@ -1,2 +1,7 @@
 BeautifulSoup4
 requests
+google-generativeai
+absl-py
+ollama
+openai
+anthropic
