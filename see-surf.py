@@ -146,19 +146,20 @@ def send_to_llm(system_instructions, user_content):
                 return None
     return None
 
-def pause_for_confirmation(url, reason):
+def pause_for_confirmation(attack_url, reason):
     """
     Acquires a lock to pause console output, alerts the user, 
     and waits for input to continue.
     """
     with print_lock:
-
-	    try:
-		    input(f"\033[93mPress [ENTER] to continue hunting other parameters...\033[0m")
-	    except KeyboardInterrupt:
-		    print("\nExiting...")
-		    sys.exit()
-	    print("\n[+] Resuming scan...\n")
+        try:
+            print(f"\033[91m[!!!] CONFIRMED HIT: {attack_url}\033[0m")
+            print(f"\033[93m      Reason: {reason}\033[0m")
+            input(f"\033[93mPress [ENTER] to continue hunting other parameters...\033[0m")
+        except KeyboardInterrupt:
+    	    print("\nExiting...")
+    	    sys.exit()
+        print("\n[+] Resuming scan...\n")
 
 #Generate SSRF payloads with LLM
 def generate_payloads_with_llm(response_object):
@@ -317,8 +318,6 @@ def smart_pivot_to_internal(paramName, original_url, initial_response_text):
             result = analyze_ssrf_result_with_llm(payload, r.text)
             
             if result and result.get("status") == "VULNERABLE":
-                print(f"\033[91m[!!!] CONFIRMED HIT: {attack_url}\033[0m")
-                print(f"\033[93m      Reason: {result.get('reason')}\033[0m")
 				
                 VULNERABLE_URLS.append({
                     "type": "Internal SSRF (AI Verified)",
@@ -383,8 +382,8 @@ def check_non_blind_ssrf(paramName, original_url):
 		print(f"[!] Error probing {paramName}: {e}")
 		return False
 
-validateHost_regex="^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
-validateHostIpWithPort_regex="^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
+validateHost_regex=r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
+validateHostIpWithPort_regex=r"^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
 
 #Validating Host name
 if not(re.match(validateHost_regex,args.host) or re.match(validateHostIpWithPort_regex,args.host)):
@@ -431,8 +430,10 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 		temp=url+":paramname:"+paramName
 	else:
 		temp=paramName
-	if temp not in ssrfVul and re.search(matchList,paramName,re.I):
-		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
+		if temp not in ssrfVul and re.search(matchList,paramName,re.I):
+			if args.verbose:
+				print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
+        				
 		ssrfVul.add(temp)
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now) 	
 		if getOrForm == "GET":
@@ -446,8 +447,9 @@ def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
 	else:
 		temp=paramValues if paramName=="" else paramName
                 
-	if temp not in ssrfVul and (re.match("^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
-		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
+	if temp not in ssrfVul and (re.match(r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$",paramValues) or re.match(r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.|$)){4}",paramValues)):
+		if args.verbose:
+			print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
 		ssrfVul.add(temp)
 		if getOrForm == "GET":
 			check_non_blind_ssrf(paramName,url)
@@ -456,7 +458,7 @@ def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
 def checkForGetRequest(url):
 	#print ("Checking for ssrf:"+url)
 	#Regex to find parameters in a url
-	checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",url)
+	checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",url)
 
 	#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
 	if not len(checking_params_for_url)==0:
@@ -481,7 +483,8 @@ def checkFormParameters(siteContent,url):
 #This checks against URL keywords in param NAME
 def burp_matchURLKeywordsInName(getOrForm,paramName,url):
 	if re.search(matchList,paramName,re.I):
-		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
+		if args.verbose:
+			print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now)
 		if getOrForm == "GET":
 			check_non_blind_ssrf(paramName,url)
@@ -489,8 +492,9 @@ def burp_matchURLKeywordsInName(getOrForm,paramName,url):
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def burp_matchURLPatternInValue(getOrForm, paramName,paramValues,url):
 	#Regex is changed since Form parameters sometimes have array or other object in their values
-	if (re.match("(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?",str(paramValues)) or re.match("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)",str(paramValues))):
-		print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
+	if (re.match(r"(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?",str(paramValues)) or re.match(r"((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)",str(paramValues))):
+		if args.verbose:
+			print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm, "Value" if paramName=="" else "Name",paramValues if paramName=="" else paramName,url))
 		if getOrForm == "GET":
 			check_non_blind_ssrf(paramName,url)
 
@@ -535,7 +539,7 @@ def burp_siteMap_parse(q_burp):
 			#since the 2nd url contains all param of 1st url plus one more parameter 'filter'
 			#http://www.msn.com/es-mx/deportes/browse/el-universal/vs-BBnqaEA?page=2&sort=sort_1
 			#http://www.msn.com/es-mx/deportes/browse/el-universal/vs-BBnqaEA?page=2&filter=duration_0&sort=sort_2
-				checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
+				checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 				get_req=linkUrl.rsplit('?',1)
 				url=get_req[0]
 				parameters=get_req[1]
@@ -570,7 +574,7 @@ def burp_siteMap_parse(q_burp):
 			if item.find('status').text=="200" and item.find('method').text=="POST":
 				#Special condition for handling URL parameters in post request to send them 
 				if "?" in linkUrl:
-					checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
+					checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 
 					#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
 					if not len(checking_params_for_url)==0:
@@ -589,7 +593,7 @@ def burp_siteMap_parse(q_burp):
 					response=urllib.parse.unquote(response)
 					if re.search(form_regex,response):
 						form_req=re.search(form_regex,response).group(1)
-						checking_params_for_url= re.findall("(\&)?([^=]+)\=([^&]+)",form_req)
+						checking_params_for_url= re.findall(r"(\&)?([^=]+)\=([^&]+)",form_req)
 						 #Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
 						if not len(checking_params_for_url)==0:
 							#Getting the param values params[2] and param name params[1] and matching against regex
@@ -612,7 +616,7 @@ def burp_siteMap_parse(q_burp):
 					print ("")
 
 			elif item.find('status').text=="200" and item.find('method').text=="GET":
-				checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
+				checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 
 				#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
 				if not len(checking_params_for_url)==0:
@@ -692,7 +696,7 @@ def basicCrawling(url):
 				#since the 2nd url contains all param of 1st url plus one more parameter 'filter'
 				#http://www.msn.com/es-mx/deportes/browse/el-universal/vs-BBnqaEA?page=2&sort=sort_1
 				#http://www.msn.com/es-mx/deportes/browse/el-universal/vs-BBnqaEA?page=2&filter=duration_0&sort=sort_2
-					checking_params_for_url= re.findall("(\?|\&)([^=]+)\=([^&]+)",linkUrl)
+					checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 					get_req=linkUrl.rsplit('?',1)
 					url=get_req[0]
 					parameters=get_req[1]
