@@ -376,18 +376,6 @@ def check_non_blind_ssrf(paramName, original_url):
 		print(f"[!] Error probing {paramName}: {e}")
 		return False
 
-validateHost_regex=r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
-validateHostIpWithPort_regex=r"^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
-
-#Validating Host name
-if not(re.match(validateHost_regex,args.host) or re.match(validateHostIpWithPort_regex,args.host)):
-    print ("Terminating... Please enter Host in the format http://google.com or https://google.com or http://10.10.10.10 for internal hosts")
-    sys.exit()
-
-#if args.payload and not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
-#        print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
-#        sys.exit()
-
 #Keeps a record of links which are already saved and are present just once in the queue
 linksVisited=set()
 ssrfVul=set()
@@ -732,11 +720,27 @@ def do_stuff(q):
 			q.task_done()
 			continue
 
+#Validate URL patterns
+def is_valid_target(url):
+    try:
+        result = urlparse(url)
+        # Check 1: Must have a scheme (http/https) and a netloc (domain/ip)
+        if not all([result.scheme, result.netloc]):
+            return False
+        # Check 2: Scheme must be http or https
+        if result.scheme not in ['http', 'https']:
+            return False
+        return True
+    except:
+        return False
+
+if not is_valid_target(args.host):
+    print("Terminating... Please enter Host in the format http://target.com or https://10.10.10.10")
+    sys.exit()
 
 parsed=urlparse(args.host)
 baseURL=parsed.scheme+"://"+parsed.netloc
 print ("Target URL - " + baseURL)
-
 
 if args.burp:
 	burp_xml = xml.etree.ElementTree.fromstring(open(args.burp, "r").read())
