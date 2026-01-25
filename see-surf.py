@@ -376,18 +376,6 @@ def check_non_blind_ssrf(paramName, original_url):
 		print(f"[!] Error probing {paramName}: {e}")
 		return False
 
-validateHost_regex=r"^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$"
-validateHostIpWithPort_regex=r"^https?:\/\/(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])?:?[0-9]+$"
-
-#Validating Host name
-if not(re.match(validateHost_regex,args.host) or re.match(validateHostIpWithPort_regex,args.host)):
-    print ("Terminating... Please enter Host in the format http://google.com or https://google.com or http://10.10.10.10 for internal hosts")
-    sys.exit()
-
-#if args.payload and not re.match(validateHost_regex,args.payload) and not re.match(validateHostIpWithPort_regex,args.payload):
-#        print ("Terminating... Please enter Host in the format http://google.com or http://192.168.1.1:80")
-#        sys.exit()
-
 #Keeps a record of links which are already saved and are present just once in the queue
 linksVisited=set()
 ssrfVul=set()
@@ -407,16 +395,6 @@ cookiesDict={}
 if args.cookies:
 	for cook in args.cookies:
 		cookiesDict[cook[:cook.find("=")]]=cook[cook.find("=")+1:]
-
-#Making an external request to a hostname through the potential vulnerable parameter to validate SSRF
-#def makingExternalRequests(paramName, url):
-#	regexToReplace=paramName+"=(.*?)(?:&|$)"
-#	parameterValuetoReplace=re.search(regexToReplace,url).group(1)
-
-	#Adding paramname 'args.payload+"/"+paramName,' at the end of burp collaborator url to differentiate which param succeeded to make external request.
-#	formingPayloadURL=re.sub(parameterValuetoReplace,args.payload+"/"+paramName,url)
-#	print ("\033[91m[+] Making external request with the potential vulnerable url:"+formingPayloadURL)
-#	requests.get(formingPayloadURL)
 
 #This checks against URL keywords in param NAME
 def matchURLKeywordsInName(getOrForm,paramName,url):
@@ -454,7 +432,7 @@ def checkForGetRequest(url):
 	#Regex to find parameters in a url
 	checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",url)
 
-	#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+	#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 	if not len(checking_params_for_url)==0:
 		#Getting the param values params[2] and param name params[1] and matching against regex
 		for params in checking_params_for_url:
@@ -508,7 +486,7 @@ def burp_siteMap_parse(q_burp):
 			else:
 				post=False
 			linkUrl=item.find('url').text
-			#Reducing unneccessary crawling and duplication	
+			#Reducing unnecessary crawling and duplication	
 			#Some post request were containing parameters in the URL as well for exmaple POST /api?returnUrl=
 			if "?" not in linkUrl:
 				rest_apis=linkUrl.rsplit('/',1)
@@ -570,7 +548,7 @@ def burp_siteMap_parse(q_burp):
 				if "?" in linkUrl:
 					checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 
-					#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+					#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 					if not len(checking_params_for_url)==0:
 						#Getting the param values params[2] and param name params[1] and matching against regex
 						for params in checking_params_for_url:
@@ -588,7 +566,7 @@ def burp_siteMap_parse(q_burp):
 					if re.search(form_regex,response):
 						form_req=re.search(form_regex,response).group(1)
 						checking_params_for_url= re.findall(r"(\&)?([^=]+)\=([^&]+)",form_req)
-						 #Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+						 #Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 						if not len(checking_params_for_url)==0:
 							#Getting the param values params[2] and param name params[1] and matching against regex
 							for params in checking_params_for_url:
@@ -612,7 +590,7 @@ def burp_siteMap_parse(q_burp):
 			elif item.find('status').text=="200" and item.find('method').text=="GET":
 				checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",linkUrl)
 
-				#Checking if there is a paramater in the URL (This would filter rest APIs in the format /test/1 /test/2)
+				#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
 				if not len(checking_params_for_url)==0:
 					#Getting the param values params[2] and param name params[1] and matching against regex
 					for params in checking_params_for_url:
@@ -732,11 +710,27 @@ def do_stuff(q):
 			q.task_done()
 			continue
 
+#Validate URL patterns
+def is_valid_target(url):
+    try:
+        result = urlparse(url)
+        # Check 1: Must have a scheme (http/https) and a netloc (domain/ip)
+        if not all([result.scheme, result.netloc]):
+            return False
+        # Check 2: Scheme must be http or https
+        if result.scheme not in ['http', 'https']:
+            return False
+        return True
+    except:
+        return False
+
+if not is_valid_target(args.host):
+    print("Terminating... Please enter Host in the format http://target.com or https://10.10.10.10")
+    sys.exit()
 
 parsed=urlparse(args.host)
 baseURL=parsed.scheme+"://"+parsed.netloc
 print ("Target URL - " + baseURL)
-
 
 if args.burp:
 	burp_xml = xml.etree.ElementTree.fromstring(open(args.burp, "r").read())
