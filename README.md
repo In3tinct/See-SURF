@@ -106,5 +106,8 @@ Browser the target with your burpsuite running at the background, make some GET/
 ## 🔮 Future Extensions
 - Integration for Blind SSRF.
 
+## ⚠️ Disclaimer
+Use See-SURF for scanning targets with prior mutual consent. It is the end user's responsibility and the developer assumes no liability and is not responsible for any misuse or damage caused by this program. Only use this tool for educational purposes or on domains you have explicit permission to test. Use it at your own risk.
+
 ## 📜 License
 GNUV3 © [In3tinct]
