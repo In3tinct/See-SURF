@@ -1,6 +1,6 @@
 BeautifulSoup4
 requests
-google-generativeai
+google-genai
 absl-py
 ollama
 openai
