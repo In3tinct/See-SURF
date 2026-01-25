@@ -4,18 +4,6 @@ Security scanner (now powered with AI 🤖) to find potential Server Side Reques
 
 ![alt text](https://github.com/In3tinct/See-SURF/blob/master/See-SURF.png?raw=true)
 
-## 🚀 Key Features
-
-- Automated Reconnaissance: Multi-threaded crawler that gathers and parses data to identify potential SSRF parameters using strong regex matching (e.g., matching keywords like url, website, or IP addresses).
-
-- Burp Suite Integration: Seamlessly parses Burp Suite sitemaps (.xml) to discover a wider range of parameters before crawling.
-
-- Authenticated Scanning: Supports cookie-based authentication to scan endpoints behind login pages.
-
-- Verbose Reporting: Optional verbose mode to track parameter sanitization across different endpoints.
-
-- Validation & Exploitation: The new AI integration features AI-powered detection through providers like Google Gemini and OpenAI to analyze response headers, a smart pivot mechanism for targeting internal services like AWS Metadata, and automated vulnerability validation to confirm the leakage of sensitive data.
-
 ## 🎓 Citation
 Please cite, If you use this software in your Research papers, articles etc.
 
@@ -29,6 +17,20 @@ version = {2.0.0},
 year = {2019}
 }
 ```
+
+## 🚀 Key Features
+
+- Automated Reconnaissance: Multi-threaded crawler that gathers and parses data to identify potential SSRF parameters using strong regex matching (e.g., matching keywords like url, website, or IP addresses).
+
+- Burp Suite Integration: Seamlessly parses Burp Suite sitemaps (.xml) to discover a wider range of parameters before crawling.
+
+- Authenticated Scanning: Supports cookie-based authentication to scan endpoints behind login pages.
+
+- Verbose Reporting: Optional verbose mode to track parameter sanitization across different endpoints.
+
+- Validation & Exploitation: The new AI integration features AI-powered detection through providers like Google Gemini and OpenAI to analyze response headers, a smart pivot mechanism for targeting internal services like AWS Metadata, and automated vulnerability validation to confirm the leakage of sensitive data.
+
+![alt text](https://github.com/In3tinct/See-SURF/blob/master/SSRF%20in%20action.png?raw=true)
 
 ## ⚙️ Installation
 ```bash
