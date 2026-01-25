@@ -396,16 +396,6 @@ if args.cookies:
 	for cook in args.cookies:
 		cookiesDict[cook[:cook.find("=")]]=cook[cook.find("=")+1:]
 
-#Making an external request to a hostname through the potential vulnerable parameter to validate SSRF
-#def makingExternalRequests(paramName, url):
-#	regexToReplace=paramName+"=(.*?)(?:&|$)"
-#	parameterValuetoReplace=re.search(regexToReplace,url).group(1)
-
-	#Adding paramname 'args.payload+"/"+paramName,' at the end of burp collaborator url to differentiate which param succeeded to make external request.
-#	formingPayloadURL=re.sub(parameterValuetoReplace,args.payload+"/"+paramName,url)
-#	print ("\033[91m[+] Making external request with the potential vulnerable url:"+formingPayloadURL)
-#	requests.get(formingPayloadURL)
-
 #This checks against URL keywords in param NAME
 def matchURLKeywordsInName(getOrForm,paramName,url):
 	if args.verbose:
