@@ -28,7 +28,8 @@ year = {2019}
 
 - Verbose Reporting: Optional verbose mode to track parameter sanitization across different endpoints.
 
-- Validation & Exploitation: The new AI integration features AI-powered detection through providers like Google Gemini and OpenAI to analyze response headers, a smart pivot mechanism for targeting internal services like AWS Metadata, and automated vulnerability validation to confirm the leakage of sensitive data.
+- Validation & Exploitation: The new AI integration features AI-powered detection through providers like Google Gemini and OpenAI by analyzing response headers and generating custom payloads, a smart pivot mechanism for targeting internal services like AWS Metadata, and automated vulnerability validation to confirm the leakage of sensitive data (for Reflected/Non-blind SSRF). </br>
+For Blind SSRF Detection, Integrated Out-of-Band (OOB) detection using Webhook.site to identify vulnerabilities where the server does not return a direct response.
 
 ![alt text](https://github.com/In3tinct/See-SURF/blob/master/SSRF%20in%20action.png?raw=true)
 
@@ -90,13 +91,13 @@ Browser the target with your burpsuite running at the background, make some GET/
 
 2. **Parameter Matching**: It looks for keywords in parameter names (e.g., url, redirect, dest) or URL patterns in values.
 
-3. **Canary Probing**: It first attempts to fetch http://example.com. If the "Example Domain" signature is found in the response, it raises a potential Non-Blind SSRF.
+3. **Canary Probing (Non-Blind)**: It first attempts to fetch http://example.com. If the "Example Domain" signature is found in the response, it raises a potential Reflected/Non-Blind SSRF.
 
-4. **AI Fingerprinting**: If AI is enabled, it sends the response headers to the LLM to identify the server stack (e.g., AWS, PHP, Tomcat).
+4. **AI Fingerprinting & Exploitation (Non-Blind)**: If AI is enabled, it analyzes server headers & tech stack and generates specific internal payloads (AWS, etc.).
 
-5. **Exploitation**: The AI generates specific internal payloads (like 169.254.169.254 for AWS or file:///etc/passwd for Linux).
+5. **Validation (Non-Blind)**: The AI reviews the result of the attack response to verify if the data returned is actually sensitive or internal information, reducing any false positives.
 
-6. **Validation**: The AI reviews the result of the attack response to verify if the data returned is actually sensitive or internal information.
+6. **OOBE Probing (Blind)**: For every potential parameter, it generates a unique Webhook.site payload. It then polls the Webhook API to confirm if the target server made an external request.
 
 ## 🤝 Contribute
 - Report bugs.
@@ -104,7 +105,8 @@ Browser the target with your burpsuite running at the background, make some GET/
 - Suggestions for future extensions.
 
 ## 🔮 Future Extensions
-- Integration for Blind SSRF.
+- ✅ Probing for Blind SSRF.
+- Exploitation for Blind SSRF.
 
 ## ⚠️ Disclaimer
 Use See-SURF for scanning targets with prior mutual consent. It is the end user's responsibility and the developer assumes no liability and is not responsible for any misuse or damage caused by this program. Only use this tool for educational purposes or on domains you have explicit permission to test. Use it at your own risk.
