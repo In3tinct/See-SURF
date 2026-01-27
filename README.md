@@ -105,6 +105,7 @@ Browser the target with your burpsuite running at the background, make some GET/
 - Suggestions for future extensions.
 
 ## 🔮 Future Extensions
+- ✅ AI integration for context-aware payload generation and Reflected SSRF.
 - ✅ Probing for Blind SSRF.
 - Exploitation for Blind SSRF.
 
