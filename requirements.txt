@@ -5,3 +5,4 @@ absl-py
 ollama
 openai
 anthropic
+pycryptodome
