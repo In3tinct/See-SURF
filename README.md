@@ -20,16 +20,13 @@ year = {2019}
 
 ## 🚀 Key Features
 
-- Automated Reconnaissance: Multi-threaded crawler that gathers and parses data to identify potential SSRF parameters using strong regex matching (e.g., matching keywords like url, website, or IP addresses).
+- Automated Reconnaissance: Multi-threaded crawler that gathers and parses data to identify potential SSRF parameters using strong regex matching (e.g., matching keywords like url, website, or IP addresses). Supports cookie-based authentication to scan endpoints behind login pages.
 
 - Burp Suite Integration: Seamlessly parses Burp Suite sitemaps (.xml) to discover a wider range of parameters before crawling.
 
-- Authenticated Scanning: Supports cookie-based authentication to scan endpoints behind login pages.
-
-- Verbose Reporting: Optional verbose mode to track parameter sanitization across different endpoints.
-
-- Validation & Exploitation: The new AI integration features AI-powered detection through providers like Google Gemini and OpenAI by analyzing response headers and generating custom payloads, a smart pivot mechanism for targeting internal services like AWS Metadata, and automated vulnerability validation to confirm the leakage of sensitive data (for Reflected/Non-blind SSRF). </br>
-For Blind SSRF Detection, Integrated Out-of-Band (OOB) detection using Webhook.site to identify vulnerabilities where the server does not return a direct response.
+- Validation & Exploitation: The new AI integration features AI-powered detection through providers like Google Gemini and OpenAI by analyzing response headers and generating custom payloads, a smart pivot mechanism for targeting internal services like AWS Metadata, and automated vulnerability validation to confirm the leakage of sensitive data (for Reflected/Non-blind SSRF).
+ 
+- For Blind SSRF Detection, Integrated Out-of-Band (OOB) detection using Webhook.site to identify vulnerabilities where the server does not return a direct response.
 
 ![alt text](https://github.com/In3tinct/See-SURF/blob/master/SSRF%20in%20action.png?raw=true)
 
