@@ -69,12 +69,12 @@ python3 see-surf.py -H https://www.target.com -c "cookie_name1=value1 cookie_nam
 
 ` -H` - Host name/Ip address fo the target<br/>
 ` -c` - Cookies for authenticated scanning, seperated by space (Some websites use multiple cookies for session tracking<br/>
-` -b` (Optional but recommended) - Spider the request using burpsuite site map, export the site map file and give it to see-surf as input (check detailed features on how to do it)<br/>
-` -p` (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params<br/>
-` -v` (Optional) By default, normal mode is On, with a verbose switch you would see the same vulnerable param in different endpoints. The same parameter may not be sanitized at all places. But verbose mode generates a lot of noise. <br/>
 `-p` --provider	AI Provider: google, openai, anthropic, or ollama. [gemini](https://ai.google.dev/), OpenAI [chatgpt](https://platform.openai.com/settings/organization/api-keys), Anthropic [claude](https://console.anthropic.com/settings/keys) <br/>
 `-m` --model	Specific model name (e.g., gemini-1.5-flash, gpt-4o, llama3). <br/>
 `-a` --api-key	API Key for the selected provider (can also be set as API_KEY env var).
+` -b` (Optional but recommended) - Spider the request using burpsuite site map, export the site map file and give it to see-surf as input (check detailed features on how to do it)<br/>
+` -p` (Optional but recommended) - Your own web server/burp collaborator, the script will try to connect back for validation of SSRF params<br/>
+` -v` (Optional) By default, normal mode is On, with a verbose switch you would see the same vulnerable param in different endpoints. The same parameter may not be sanitized at all places. But verbose mode generates a lot of noise. <br/>
 
 ### Detailed Features
 
