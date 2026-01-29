@@ -69,7 +69,7 @@ python3 see-surf.py -H https://www.target.com -c "cookie_name1=value1 cookie_nam
 
 `-H` Host name/Ip address to scan<br/>
 `-c` Cookies for authenticated scanning, seperated by space (Some websites use multiple cookies for session tracking<br/>
-`-p` AI Provider: google, openai, anthropic, or ollama. [gemini](https://ai.google.dev/), OpenAI [chatgpt](https://platform.openai.com/settings/organization/api-keys), Anthropic [claude](https://console.anthropic.com/settings/keys) <br/>
+`-p` AI Provider: [ollama](https://github.com/ollama/ollama) (for local inference), [gemini](https://ai.google.dev/), OpenAI [chatgpt](https://platform.openai.com/settings/organization/api-keys), Anthropic [claude](https://console.anthropic.com/settings/keys) <br/>
 `-m` Specific model name (e.g., gemini-1.5-flash, gpt-4o, llama3). <br/>
 `-a` API Key for the selected provider (can also be set as API_KEY env var). <br/>
 `-e` For testing Blind-SSRF OOBE request with your custom external domain in the format http://google.com, else webhook.site will be used by default. <br/>
