@@ -45,6 +45,7 @@ parser.add_argument("-b", "--burp",dest="burp",help="provide a burp file", actio
 parser.add_argument("-p","--provider", dest="provider", help="llm provider: google, openai, anthropic, ollama", default=None)
 parser.add_argument("-m","--model", dest="model", help="model name: gemini-1.5-flash, gpt-4, llama3", default=None)
 parser.add_argument("-a","--api-key", dest="api_key", help="API Key (or set env var API_KEY)", default=None)
+parser.add_argument("-e","--external-domain", dest="ext_domain", help="For testing Blind-SSRF OOBE request, else webhook.site will be used by default", default=None)
 
 args = parser.parse_args()
 
@@ -55,7 +56,7 @@ vulnerable_list = []
 print_lock = Lock()
 
 # Initialize global instance for Blind SSRF testing
-oobe = OOBEHandler(vulnerable_list, print_lock)
+oobe = OOBEHandler(vulnerable_list, print_lock, custom_domain=args.ext_domain)
 oobe.setup()
 
 # If LLM fails to generate payload or not provided, we use these.
@@ -305,7 +306,8 @@ def smart_pivot_to_internal(paramName, original_url):
     val_to_replace = match.group(1)
 
     for payload in custom_payloads:
-        print(f"\033[96m[AI-Test] Trying: {payload}\033[0m")
+        if (args.verbose):
+            print(f"\033[96m[AI-Test] Trying: {payload}\033[0m")
         attack_url = original_url.replace(val_to_replace, payload)
         
         try:
@@ -322,7 +324,7 @@ def smart_pivot_to_internal(paramName, original_url):
             if result and result.get("status") == "VULNERABLE":
 				
                 vulnerable_list.append({
-                    "type": "Internal SSRF (AI Verified)",
+                    "type": "Reflected SSRF (AI Verified)",
 					"original_url":original_url,
                     "vulnerable_param": paramName,
                     "payload": payload,
@@ -781,6 +783,9 @@ def is_valid_target(url):
 if not is_valid_target(args.host):
     print("Terminating... Please enter Host in the format http://target.com or https://10.10.10.10")
     sys.exit()
+elif not is_valid_target(args.ext_domain):
+    print("Terminating... Please enter external domain in the format http://target.com or https://10.10.10.10")
+    sys.exit()
 
 parsed=urlparse(args.host)
 baseURL=parsed.scheme+"://"+parsed.netloc
@@ -839,7 +844,7 @@ for i in range(num_threads):
 try:
 	q.join()
 	
-	if oobe.enabled:
+	if oobe.enabled and not args.ext_domain:
 		wait_time = 30
 		print(f"[*] Waiting {wait_time}s for OOB callbacks...")
 		time.sleep(wait_time)
@@ -863,6 +868,7 @@ try:
 	else:
 		print("\033[92m[+] No confirmed SSRF vulnerabilities found.\033[0m")
 	print("="*70 + "\n")
+	if (args.ext_domain): print(f"\033[92m[+] Please check {args.ext_domain} logs for blind SSRF vulnerabilities.\033[0m")
 except KeyboardInterrupt:
 			print("\n[!] Keyboard interrupt. Cleaning up...")
 			oobe.stop()
