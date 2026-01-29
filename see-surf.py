@@ -783,7 +783,7 @@ def is_valid_target(url):
 if not is_valid_target(args.host):
     print("Terminating... Please enter Host in the format http://target.com or https://10.10.10.10")
     sys.exit()
-elif not is_valid_target(args.ext_domain):
+elif args.ext_domain is not None and not is_valid_target(args.ext_domain):
     print("Terminating... Please enter external domain in the format http://target.com or https://10.10.10.10")
     sys.exit()
 
