@@ -3,11 +3,13 @@ import requests
 import json
 import hashlib
 from threading import Thread
+import urllib
 
 class OOBEHandler:
-    def __init__(self, vulnerable_list, print_lock):
+    def __init__(self, vulnerable_list, print_lock, custom_domain=None):
         self.vulnerable_list = vulnerable_list
         self.print_lock = print_lock
+        self.custom_domain = custom_domain
         self.enabled = False
         self.running = False
         self.tracker = {}
@@ -17,6 +19,13 @@ class OOBEHandler:
 
     def setup(self):
         try:
+            # IF CUSTOM DOMAIN IS PROVIDED, SKIP WEBHOOK.SITE
+            if self.custom_domain:
+                self.webhook_url = f"http://{self.custom_domain.strip('/')}"
+                self.enabled = True
+                print(f"\033[94m[+] For Custom domain, Manual monitoring of logs {self.custom_domain} required for Blind SSRF.")
+                return True
+
             # Create the private session
             r = requests.post("https://webhook.site/token", timeout=10)
             if r.status_code == 201:
@@ -33,6 +42,16 @@ class OOBEHandler:
         return False
 
     def get_payload(self, original_url, param_name):
+        # If custom domain was provided
+        if self.custom_domain:
+            params = {
+            "original_url": original_url,
+            "vuln_param": param_name
+            }
+            encoded_params = urllib.parse.urlencode(params)
+            complete_url = f"{self.custom_domain}/blind_ssrf?{encoded_params}"
+            return f"{complete_url}"
+
         # We use a hash to identify which specific URL/Param triggered the hit
         url_hash = hashlib.md5(f"{original_url}{param_name}".encode()).hexdigest()[:8]
         self.tracker[url_hash] = {"url": original_url, "param": param_name}
