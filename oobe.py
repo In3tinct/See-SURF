@@ -1,6 +1,7 @@
 import time
 import requests
 import json
+import base64
 import hashlib
 from threading import Thread
 import urllib
@@ -48,9 +49,11 @@ class OOBEHandler:
             "original_url": original_url,
             "vuln_param": param_name
             }
-            encoded_params = urllib.parse.urlencode(params)
-            complete_url = f"{self.custom_domain}/blind_ssrf?{encoded_params}"
-            return f"{complete_url}"
+
+            # Convert params dict to JSON and base64-encode it (URL-safe)
+            b64_encoded_params = base64.urlsafe_b64encode(json.dumps(params).encode()).decode()
+            complete_url = f"{self.custom_domain}/blind_ssrf?b64_params={b64_encoded_params}"
+            return complete_url
 
         # We use a hash to identify which specific URL/Param triggered the hit
         url_hash = hashlib.md5(f"{original_url}{param_name}".encode()).hexdigest()[:8]
